@@ -52,4 +52,14 @@ public final class LanguageSupporter {
             pythonLanguageSupporter() {
         return new PythonLanguageSupport();
     }
+
+    @Nonnull
+    public static ILanguageSupport<
+                    Object,
+                    Object,
+                    Object,
+                    Object>
+            cLanguageSupporter() {
+        return new com.ibm.engine.language.c.CxxLanguageSupport();
+    }
 }
