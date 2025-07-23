@@ -1,5 +1,4 @@
 package com.ibm.plugin;
-
 import org.sonar.plugins.cxx.CustomCxxRulesDefinition;
 import org.sonarsource.api.sonarlint.SonarLintSide;
 
@@ -20,4 +19,4 @@ public class CCheckRegistrar extends CustomCxxRulesDefinition {
     public Class[] checkClasses() {
         return CRuleList.getChecks().toArray(new Class[0]);
     }
-}
+  }
