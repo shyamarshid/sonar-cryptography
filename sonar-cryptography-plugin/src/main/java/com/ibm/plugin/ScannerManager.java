@@ -24,6 +24,9 @@ import com.ibm.output.IOutputFile;
 import com.ibm.output.IOutputFileFactory;
 import com.ibm.output.statistics.IStatistics;
 import com.ibm.output.statistics.ScanStatistics;
+import com.ibm.plugin.CAggregator;
+import com.ibm.plugin.JavaAggregator;
+import com.ibm.plugin.PythonAggregator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -65,11 +68,13 @@ public final class ScannerManager {
         List<INode> nodes = new ArrayList<>();
         nodes.addAll(JavaAggregator.getDetectedNodes());
         nodes.addAll(PythonAggregator.getDetectedNodes());
+        nodes.addAll(CAggregator.getDetectedNodes());
         return nodes;
     }
 
     public void reset() {
         JavaAggregator.reset();
         PythonAggregator.reset();
+        CAggregator.reset();
     }
 }
