@@ -1,7 +1,6 @@
 package com.ibm.engine.language.c;
 
 import com.ibm.engine.detection.IBaseMethodVisitor;
-
 import com.ibm.engine.detection.IDetectionEngine;
 import com.ibm.engine.detection.TraceSymbol;
 import javax.annotation.Nonnull;

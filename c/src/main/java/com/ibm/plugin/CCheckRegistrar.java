@@ -3,7 +3,9 @@ package com.ibm.plugin;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.sonar.api.batch.rule.CheckRegistrar;
-import org.sonar.api.batch.rule.Checks;
+import org.sonarsource.api.sonarlint.SonarLintSide;
+
+@SonarLintSide
 
 public class CCheckRegistrar implements CheckRegistrar {
     @Override
