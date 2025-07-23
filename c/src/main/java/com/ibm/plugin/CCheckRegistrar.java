@@ -1,7 +1,4 @@
 package com.ibm.plugin;
-
-import java.util.List;
-import javax.annotation.Nonnull;
 import org.sonar.plugins.cxx.CustomCxxRulesDefinition;
 import org.sonarsource.api.sonarlint.SonarLintSide;
 
@@ -22,12 +19,4 @@ public class CCheckRegistrar extends CustomCxxRulesDefinition {
     public Class[] checkClasses() {
         return CRuleList.getChecks().toArray(new Class[0]);
     }
-
-    public static @Nonnull List<Class<?>> checkClasses() {
-        return CRuleList.getChecks();
-    }
-
-    public static @Nonnull List<Class<?>> testCheckClasses() {
-        return List.of();
-    }
-}
+  }
