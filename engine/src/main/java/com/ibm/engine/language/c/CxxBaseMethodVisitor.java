@@ -19,5 +19,6 @@ public class CxxBaseMethodVisitor implements IBaseMethodVisitor<Object> {
     @Override
     public void visitMethodDefinition(@Nonnull Object method) {
         // no-op for now
+
     }
 }

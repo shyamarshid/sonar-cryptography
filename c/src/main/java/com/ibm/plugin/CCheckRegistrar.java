@@ -6,6 +6,7 @@ import org.sonar.api.batch.rule.CheckRegistrar;
 import org.sonarsource.api.sonarlint.SonarLintSide;
 
 @SonarLintSide
+
 public class CCheckRegistrar implements CheckRegistrar {
     @Override
     public void register(RegistrarContext registrarContext) {
