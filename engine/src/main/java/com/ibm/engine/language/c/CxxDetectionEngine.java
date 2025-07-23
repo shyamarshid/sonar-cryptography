@@ -6,7 +6,8 @@ import com.ibm.engine.detection.IDetectionEngine;
 import com.ibm.engine.detection.IType;
 import com.ibm.engine.detection.MatchContext;
 import com.ibm.engine.detection.MethodMatcher;
-import com.ibm.engine.detection.Parameter;
+import com.ibm.engine.rule.Parameter;
+
 import com.ibm.engine.detection.ResolvedValue;
 import com.ibm.engine.detection.TraceSymbol;
 import com.ibm.engine.executive.DetectionExecutive;

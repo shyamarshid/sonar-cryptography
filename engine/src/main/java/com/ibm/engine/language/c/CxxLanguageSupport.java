@@ -48,7 +48,9 @@ public class CxxLanguageSupport implements ILanguageSupport<Object, Object, Obje
     @Nonnull
     @Override
     public IBaseMethodVisitorFactory<Object, Object> getBaseMethodVisitorFactory() {
-        return CxxBaseMethodVisitor::new;
+        return (traceSymbol, detectionEngine) ->
+                new CxxBaseMethodVisitor(traceSymbol, detectionEngine);
+
     }
 
     @Nonnull
