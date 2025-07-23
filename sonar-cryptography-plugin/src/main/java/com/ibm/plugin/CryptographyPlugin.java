@@ -24,6 +24,8 @@ import org.slf4j.LoggerFactory;
 import org.sonar.api.Plugin;
 import org.sonar.api.SonarProduct;
 import org.sonar.api.SonarRuntime;
+import com.ibm.plugin.CCheckRegistrar;
+import com.ibm.plugin.CScannerRuleDefinition;
 
 public class CryptographyPlugin implements Plugin {
 
@@ -45,6 +47,9 @@ public class CryptographyPlugin implements Plugin {
                 // python
                 PythonScannerRuleDefinition.class, // Define Rules
                 PythonCheckRegistrar.class, // Register Python rules by sonar-python sensor
+                // c/c++
+                CScannerRuleDefinition.class,
+                CCheckRegistrar.class,
                 // general
                 OutputFileJob.class);
     }

@@ -31,6 +31,7 @@ It is part of **the [CBOMKit](https://github.com/PQCA/cbomkit) toolset**.
 > [!NOTE]
 > The plugin is designed in a modular way so that it can be extended to support additional languages and recognition rules to support more libraries.
 > - To add support for another language or cryptography library, see [*Extending the Sonar Cryptography Plugin to add support for another language or cryptography library*](./docs/LANGUAGE_SUPPORT.md)
+> - For community maintained C/C++ support, see [*Building SonarCXX locally*](./docs/C_LANGUAGE_SUPPORT.md)
 > - If you just want to know more about the syntax for writing new detection rules, see [*Writing new detection rules for the Sonar Cryptography Plugin*](./docs/DETECTION_RULE_STRUCTURE.md)
 
 ## Installation
