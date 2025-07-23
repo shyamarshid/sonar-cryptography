@@ -1,6 +1,7 @@
 package com.ibm.engine.language.c;
 
 import com.ibm.engine.detection.IBaseMethodVisitor;
+
 import com.ibm.engine.detection.IDetectionEngine;
 import com.ibm.engine.detection.TraceSymbol;
 import javax.annotation.Nonnull;
@@ -19,5 +20,6 @@ public class CxxBaseMethodVisitor implements IBaseMethodVisitor<Object> {
     @Override
     public void visitMethodDefinition(@Nonnull Object method) {
         // no-op for now
+
     }
 }

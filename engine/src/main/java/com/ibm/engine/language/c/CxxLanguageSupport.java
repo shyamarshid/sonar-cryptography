@@ -50,6 +50,7 @@ public class CxxLanguageSupport implements ILanguageSupport<Object, Object, Obje
     public IBaseMethodVisitorFactory<Object, Object> getBaseMethodVisitorFactory() {
         return (traceSymbol, detectionEngine) ->
                 new CxxBaseMethodVisitor(traceSymbol, detectionEngine);
+
     }
 
     @Nonnull
