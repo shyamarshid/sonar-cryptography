@@ -13,7 +13,7 @@
     "cbom",
     "cwe"
   ],
-  "defaultSeverity": "Minor",
+  "defaultSeverity": "MINOR",
   "scope": "Main",
   "sqKey": "Inventory"
 }
