@@ -24,6 +24,7 @@ public class CScannerRuleDefinition implements RulesDefinition {
 
         RuleMetadataLoader loader = new RuleMetadataLoader(RESOURCE_BASE_PATH, this.sonarRuntime);
         loader.addRulesByAnnotatedClass(repository, CRuleList.getChecks());
+        repository.rule("Inventory").setName("Inventory cryptographic primitives");
         repository.done();
     }
 }
