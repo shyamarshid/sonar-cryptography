@@ -2,7 +2,7 @@ package com.ibm.plugin.rules.detection.wolfcrypt;
 
 import com.ibm.engine.model.context.CipherContext;
 import com.ibm.engine.model.context.DigestContext;
-import com.ibm.engine.model.factory.AlgorithmFactory;
+import com.ibm.engine.model.factory.ValueActionFactory;
 import com.ibm.engine.rule.IDetectionRule;
 import com.ibm.engine.rule.builder.DetectionRuleBuilder;
 import java.util.List;
@@ -18,7 +18,7 @@ public final class WolfCryptRules {
                     .createDetectionRule()
                     .forObjectTypes(LIB_TYPE)
                     .forMethods("wc_Sha256Final")
-                    .shouldBeDetectedAs(new AlgorithmFactory<>("SHA-256"))
+                    .shouldBeDetectedAs(new ValueActionFactory<>("SHA-256"))
                     .withAnyParameters()
                     .buildForContext(new DigestContext())
                     .inBundle(() -> "WolfCrypt")
@@ -29,7 +29,7 @@ public final class WolfCryptRules {
                     .createDetectionRule()
                     .forObjectTypes(LIB_TYPE)
                     .forMethods("wc_AesCbcEncrypt")
-                    .shouldBeDetectedAs(new AlgorithmFactory<>("AES"))
+                    .shouldBeDetectedAs(new ValueActionFactory<>("AES"))
                     .withAnyParameters()
                     .buildForContext(new CipherContext())
                     .inBundle(() -> "WolfCrypt")
@@ -40,7 +40,7 @@ public final class WolfCryptRules {
                     .createDetectionRule()
                     .forObjectTypes(LIB_TYPE)
                     .forMethods("wc_RsaPublicEncrypt")
-                    .shouldBeDetectedAs(new AlgorithmFactory<>("RSA"))
+                    .shouldBeDetectedAs(new ValueActionFactory<>("RSA"))
                     .withAnyParameters()
                     .buildForContext(new CipherContext())
                     .inBundle(() -> "WolfCrypt")
