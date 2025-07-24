@@ -7,7 +7,7 @@ import org.sonar.plugins.cxx.CxxLanguage;
 import org.sonarsource.analyzer.commons.RuleMetadataLoader;
 
 public class CScannerRuleDefinition implements RulesDefinition {
-    public static final String REPOSITORY_KEY = "sonar-c-crypto";
+    public static final String REPOSITORY_KEY = "c";
     public static final String REPOSITORY_NAME = "Sonar Cryptography";
     private static final String RESOURCE_BASE_PATH = "/org/sonar/l10n/c/rules/c";
 
