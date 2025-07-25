@@ -19,6 +19,10 @@ public class CScannerRuleDefinition implements RulesDefinition {
 
     @Override
     public void define(Context context) {
+
+        URL json = getClass().getClassLoader().getResource(RESOURCE_BASE_PATH + "/Inventory.json");
+        URL html = getClass().getClassLoader().getResource(RESOURCE_BASE_PATH + "/Inventory.html");
+        LOG.info("C rule metadata: json={}, html={}", json, html);
         NewRepository repository =
                 context.createRepository(REPOSITORY_KEY, CxxLanguage.KEY).setName(REPOSITORY_NAME);
 
