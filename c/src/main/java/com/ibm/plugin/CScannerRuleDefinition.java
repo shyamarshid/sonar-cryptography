@@ -1,61 +1,63 @@
 package com.ibm.plugin;
 
-import java.net.URL;
-import java.util.stream.Collectors;
+import java.nio.charset.StandardCharsets;
+
 import org.sonar.api.SonarRuntime;
+import org.sonar.api.rules.RuleStatus;
+import org.sonar.api.rules.RuleType;
+import org.sonar.api.rules.Severity;
 import org.sonar.api.server.rule.RulesDefinition;
+import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
-import org.sonar.plugins.cxx.CxxLanguage;
-import org.sonarsource.analyzer.commons.RuleMetadataLoader;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
+import org.sonar.plugins.cxx.CxxLanguage;
+import org.sonarsource.analyzer.commons.Resources;
 
-public class CScannerRuleDefinition implements RulesDefinition {
+public final class CScannerRuleDefinition implements RulesDefinition {
 
   private static final Logger LOG = Loggers.get(CScannerRuleDefinition.class);
 
-  public static final String REPOSITORY_KEY = "c";
-  public static final String REPOSITORY_NAME = "Sonar Cryptography";
-  private static final String RESOURCE_BASE_PATH = "/org/sonar/l10n/c/rules/c";
+  private static final String REPOSITORY_KEY  = "c";
+  private static final String REPOSITORY_NAME = "Sonar Cryptography";
+  private static final String INVENTORY_KEY   = "Inventory";
+  private static final String INVENTORY_HTML  =
+      "org/sonar/l10n/c/rules/c/Inventory.html";
 
-  private final SonarRuntime sonarRuntime;
+  private final SonarRuntime runtime;
 
-  public CScannerRuleDefinition(SonarRuntime sonarRuntime) {
-    this.sonarRuntime = sonarRuntime;
+  public CScannerRuleDefinition(SonarRuntime runtime) {
+    this.runtime = runtime;
   }
 
   @Override
   public void define(Context context) {
-    // Sanity check: can we see the metadata files?
-    ClassLoader cl = getClass().getClassLoader();
-    URL json = cl.getResource(RESOURCE_BASE_PATH.substring(1) + "/Inventory.json");
-    URL html = cl.getResource(RESOURCE_BASE_PATH.substring(1) + "/Inventory.html");
-    LOG.info("C rule metadata on classpath? json={}, html={}", json, html);
+    NewRepository repo = context
+        .createRepository(REPOSITORY_KEY, CxxLanguage.KEY)
+        .setName(REPOSITORY_NAME);
 
-    NewRepository repo =
-        context.createRepository(REPOSITORY_KEY, CxxLanguage.KEY)
-               .setName(REPOSITORY_NAME);
+    String html = readHtml(INVENTORY_HTML);
 
-    RuleMetadataLoader loader = new RuleMetadataLoader(RESOURCE_BASE_PATH, sonarRuntime);
-    loader.addRulesByAnnotatedClass(repo, CRuleList.getChecks());
-
-    // Log the keys we actually loaded
-    LOG.info("Loaded C rule keys: {}", repo.rules().stream()
-        .map(NewRule::key).collect(Collectors.toList()));
-
-    // Hard fallback: guarantee every rule has a name
-    for (NewRule r : repo.rules()) {
-      r.setName(r.key());
-    }
-
-    // Explicitly set Inventory’s name too
-    NewRule inv = repo.rule("Inventory");
-    if (inv == null) {
-      LOG.warn("Rule 'Inventory' not found in repository '{}'", REPOSITORY_KEY);
-    } else {
-      inv.setName("Cryptographic Inventory (CBOM)");
-    }
+    NewRule rule = repo.createRule(INVENTORY_KEY)
+        .setName("Cryptographic Inventory (CBOM)")
+        .setHtmlDescription(html)
+        .setType(RuleType.CODE_SMELL)
+        .setSeverity(Severity.MINOR)
+        .setStatus(RuleStatus.READY)
+        .setTags("cryptography", "cbom", "cwe");
 
     repo.done();
+    LOG.info("Registered C repository '{}' with rule key '{}'", REPOSITORY_KEY, rule.key());
+  }
+
+  private static String readHtml(String resourcePath) {
+    try {
+      return Resources.toString(
+          CScannerRuleDefinition.class.getClassLoader().getResource(resourcePath),
+          StandardCharsets.UTF_8);
+    } catch (Exception e) {
+      LOG.warn("Could not load HTML description for {}", resourcePath, e);
+      return "<h2>Cryptographic Inventory (CBOM)</h2>";
+    }
   }
 }
