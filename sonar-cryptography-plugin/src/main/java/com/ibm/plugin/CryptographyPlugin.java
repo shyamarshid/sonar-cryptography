@@ -49,7 +49,7 @@ public class CryptographyPlugin implements Plugin {
                 PythonCheckRegistrar.class, // Register Python rules by sonar-python sensor
                 // c/c++
                 CScannerRuleDefinition.class,
-                CCheckRegistrar.class,
+                //CCheckRegistrar.class,
                 // general
                 OutputFileJob.class);
     }
