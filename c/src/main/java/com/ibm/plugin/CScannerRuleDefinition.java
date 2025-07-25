@@ -3,9 +3,9 @@ package com.ibm.plugin;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
 import org.sonar.api.SonarRuntime;
-import org.sonar.api.rules.RuleType; // this one still exists
 import org.sonar.api.server.rule.RulesDefinition;
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
@@ -17,8 +17,8 @@ public final class CScannerRuleDefinition implements RulesDefinition {
 
   private static final Logger LOG = Loggers.get(CScannerRuleDefinition.class);
 
-  /** Keep these public – CCheckRegistrar uses them */
-  public static final String REPOSITORY_KEY  = "c";
+  /** Keep public: CCheckRegistrar uses them */
+  public static final String REPOSITORY_KEY  = "sonar-c-crypto";
   public static final String REPOSITORY_NAME = "Sonar Cryptography";
 
   private static final String INVENTORY_KEY  = "Inventory";
@@ -33,26 +33,27 @@ public final class CScannerRuleDefinition implements RulesDefinition {
   @Override
   public void define(Context context) {
     NewRepository repo = context
-        .createRepository(REPOSITORY_KEY, CxxLanguage.KEY)
+        .createRepository(REPOSITORY_KEY, CxxLanguage.KEY) // language key from sonar-cxx
         .setName(REPOSITORY_NAME);
 
+    // Create the rule programmatically – no metadata loader, so it always has a name
     String html = readResource(INVENTORY_HTML);
 
     NewRule rule = repo.createRule(INVENTORY_KEY)
         .setName("Cryptographic Inventory (CBOM)")
         .setHtmlDescription(html)
-        .setType(RuleType.CODE_SMELL)
-        // Use String to avoid importing org.sonar.api.rule.Severity
-        .setSeverity("MINOR")
         .setTags("cryptography", "cbom", "cwe");
 
     repo.done();
 
-    LOG.info("Registered C repository '{}' with rule '{}'", REPOSITORY_KEY, rule.key());
+    LOG.info("Registered C repository '{}' with rules {}",
+        REPOSITORY_KEY,
+        repo.rules().stream().map(NewRule::key).collect(Collectors.toList()));
   }
 
   private static String readResource(String path) {
-    try (InputStream in = CScannerRuleDefinition.class.getClassLoader().getResourceAsStream(path)) {
+    try (InputStream in = CScannerRuleDefinition.class.getClassLoader()
+        .getResourceAsStream(path)) {
       if (in == null) {
         LOG.warn("HTML description not found on classpath: {}", path);
         return "<h2>Cryptographic Inventory (CBOM)</h2>";
