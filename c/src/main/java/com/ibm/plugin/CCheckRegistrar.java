@@ -9,24 +9,18 @@ public final class CCheckRegistrar extends CustomCxxRulesDefinition {
 
   @Override
   public String repositoryName() {
-    return CScannerRuleDefinition.REPOSITORY_NAME; // "Sonar Cryptography"
+    return CScannerRuleDefinition.REPOSITORY_NAME;
   }
 
   @Override
   public String repositoryKey() {
-    return CScannerRuleDefinition.REPOSITORY_KEY;  // "sonar-c-crypto"
+    return CScannerRuleDefinition.REPOSITORY_KEY;
   }
 
   @Override
-  @SuppressWarnings({"rawtypes", "unchecked"})
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   public Class[] checkClasses() {
     List<Class<?>> checks = CRuleList.getChecks();
     return checks.toArray(new Class[0]);
-  }
-
-  @Override
-  @SuppressWarnings({"rawtypes"})
-  public Class[] testCheckClasses() {
-    return new Class[0];
   }
 }
