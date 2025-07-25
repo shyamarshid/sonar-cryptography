@@ -1,6 +1,7 @@
 package com.ibm.plugin;
 
 import java.net.URL;
+import java.util.stream.Collectors;
 import org.sonar.api.SonarRuntime;
 import org.sonar.api.server.rule.RulesDefinition;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
@@ -15,8 +16,7 @@ public class CScannerRuleDefinition implements RulesDefinition {
 
   public static final String REPOSITORY_KEY = "c";
   public static final String REPOSITORY_NAME = "Sonar Cryptography";
-  // no leading slash
-  private static final String RESOURCE_BASE_PATH = "org/sonar/l10n/c/rules/c";
+  private static final String RESOURCE_BASE_PATH = "/org/sonar/l10n/c/rules/c";
 
   private final SonarRuntime sonarRuntime;
 
@@ -26,11 +26,10 @@ public class CScannerRuleDefinition implements RulesDefinition {
 
   @Override
   public void define(Context context) {
-    // sanity check: are the metadata files on the classpath?
-    URL json = getClass().getClassLoader()
-        .getResource(RESOURCE_BASE_PATH + "/Inventory.json");
-    URL html = getClass().getClassLoader()
-        .getResource(RESOURCE_BASE_PATH + "/Inventory.html");
+    // Sanity check: can we see the metadata files?
+    ClassLoader cl = getClass().getClassLoader();
+    URL json = cl.getResource(RESOURCE_BASE_PATH.substring(1) + "/Inventory.json");
+    URL html = cl.getResource(RESOURCE_BASE_PATH.substring(1) + "/Inventory.html");
     LOG.info("C rule metadata on classpath? json={}, html={}", json, html);
 
     NewRepository repo =
@@ -40,12 +39,20 @@ public class CScannerRuleDefinition implements RulesDefinition {
     RuleMetadataLoader loader = new RuleMetadataLoader(RESOURCE_BASE_PATH, sonarRuntime);
     loader.addRulesByAnnotatedClass(repo, CRuleList.getChecks());
 
-    // Hard fallback so SonarQube can't crash even if JSON wasn't picked up
+    // Log the keys we actually loaded
+    LOG.info("Loaded C rule keys: {}", repo.rules().stream()
+        .map(NewRule::key).collect(Collectors.toList()));
+
+    // Hard fallback: guarantee every rule has a name
     for (NewRule r : repo.rules()) {
       r.setName(r.key());
     }
+
+    // Explicitly set Inventory’s name too
     NewRule inv = repo.rule("Inventory");
-    if (inv != null) {
+    if (inv == null) {
+      LOG.warn("Rule 'Inventory' not found in repository '{}'", REPOSITORY_KEY);
+    } else {
       inv.setName("Cryptographic Inventory (CBOM)");
     }
 
