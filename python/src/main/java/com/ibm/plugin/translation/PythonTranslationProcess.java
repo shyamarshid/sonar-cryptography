@@ -27,9 +27,12 @@ import com.ibm.mapper.reorganizer.IReorganizerRule;
 import com.ibm.mapper.reorganizer.Reorganizer;
 import com.ibm.mapper.utils.Utils;
 import com.ibm.plugin.translation.translator.PythonTranslator;
+import com.ibm.util.CryptoTrace;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.python.api.PythonCheck;
 import org.sonar.plugins.python.api.PythonVisitorContext;
 import org.sonar.plugins.python.api.symbols.Symbol;
@@ -37,6 +40,8 @@ import org.sonar.plugins.python.api.tree.Tree;
 
 public final class PythonTranslationProcess
         extends ITranslationProcess<PythonCheck, Tree, Symbol, PythonVisitorContext> {
+
+    private static final Logger LOG = Loggers.get(PythonTranslationProcess.class);
 
     public PythonTranslationProcess(@Nonnull List<IReorganizerRule> reorganizerRules) {
         super(reorganizerRules);
@@ -48,20 +53,31 @@ public final class PythonTranslationProcess
             @Nonnull
                     DetectionStore<PythonCheck, Tree, Symbol, PythonVisitorContext>
                             rootDetectionStore) {
-        // 1. Translate
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "initiate",
+                            "finding=" + rootDetectionStore.getStoreId()));
+        }
         final PythonTranslator pythonTranslator = new PythonTranslator();
         final List<INode> translatedValues = pythonTranslator.translate(rootDetectionStore);
         Utils.printNodeTree(" translated ", translatedValues);
 
-        // 2. Reorganize
         final Reorganizer pythonReorganizer = new Reorganizer(reorganizerRules);
         final List<INode> reorganizedValues = pythonReorganizer.reorganize(translatedValues);
         Utils.printNodeTree("reorganised ", reorganizedValues);
 
-        // 3. Enrich
         final List<INode> enrichedValues = Enricher.enrich(reorganizedValues).stream().toList();
         Utils.printNodeTree("  enriched  ", enrichedValues);
 
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "initiate",
+                            "nodes=" + enrichedValues.size()));
+        }
         return Collections.unmodifiableCollection(enrichedValues).stream().toList();
     }
 }

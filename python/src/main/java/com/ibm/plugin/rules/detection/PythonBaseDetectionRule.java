@@ -31,9 +31,13 @@ import com.ibm.plugin.translation.PythonTranslationProcess;
 import com.ibm.plugin.translation.reorganizer.PythonReorganizerRules;
 import com.ibm.rules.IReportableDetectionRule;
 import com.ibm.rules.issue.Issue;
+import com.ibm.util.CryptoTrace;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nonnull;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.python.api.PythonCheck;
 import org.sonar.plugins.python.api.PythonVisitorCheck;
 import org.sonar.plugins.python.api.PythonVisitorContext;
@@ -44,6 +48,8 @@ import org.sonar.plugins.python.api.tree.Tree;
 public abstract class PythonBaseDetectionRule extends PythonVisitorCheck
         implements IObserver<Finding<PythonCheck, Tree, Symbol, PythonVisitorContext>>,
                 IReportableDetectionRule<Tree> {
+
+    private static final Logger LOG = Loggers.get(PythonBaseDetectionRule.class);
 
     private final boolean isInventory;
     @Nonnull protected final PythonTranslationProcess pythonTranslationProcess;
@@ -66,9 +72,51 @@ public abstract class PythonBaseDetectionRule extends PythonVisitorCheck
     }
 
     @Override
+    public void init() {
+        super.init();
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "init",
+                            "kinds=" + nodesToVisit()));
+        }
+    }
+
+    @Override
+    public List<Tree.Kind> nodesToVisit() {
+        return List.of(Tree.Kind.CALL_EXPRESSION);
+    }
+
+    @Override
     public void visitCallExpression(@Nonnull CallExpression tree) {
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            String file = new PythonScanContext(this.getContext()).getFilePath();
+            int line = tree.firstToken().line();
+            String callee =
+                    Optional.ofNullable(tree.calleeSymbol())
+                            .map(Symbol::name)
+                            .orElse("<unknown>");
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "visitCallExpression",
+                            "file=" + file + ":" + line + " callee=" + callee));
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "visitCallExpression",
+                            "running " + detectionRules.size() + " detection rules"));
+        }
         detectionRules.forEach(
                 rule -> {
+                    if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+                        LOG.trace(
+                                CryptoTrace.fmt(
+                                        this,
+                                        "visitCallExpression",
+                                        "rule=" + rule.bundle().getIdentifier()));
+                    }
                     DetectionExecutive<PythonCheck, Tree, Symbol, PythonVisitorContext>
                             detectionExecutive =
                                     PythonAggregator.getLanguageSupport()
@@ -90,6 +138,16 @@ public abstract class PythonBaseDetectionRule extends PythonVisitorCheck
     @Override
     public void update(@Nonnull Finding<PythonCheck, Tree, Symbol, PythonVisitorContext> finding) {
         List<INode> nodes = pythonTranslationProcess.initiate(finding.detectionStore());
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            nodes.forEach(
+                    n ->
+                            LOG.trace(
+                                    CryptoTrace.fmt(
+                                            this,
+                                            "update",
+                                            "asset="
+                                                    + n.getKind().getSimpleName())));
+        }
         if (isInventory) {
             PythonAggregator.addNodes(nodes);
         }

@@ -19,13 +19,18 @@
  */
 package com.ibm.plugin;
 
+import com.ibm.util.CryptoTrace;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.python.api.PythonCustomRuleRepository;
 import org.sonarsource.api.sonarlint.SonarLintSide;
 
 @SonarLintSide
 public class PythonCheckRegistrar implements PythonCustomRuleRepository {
+    private static final Logger LOG = Loggers.get(PythonCheckRegistrar.class);
 
     @Override
     public String repositoryKey() {
@@ -34,8 +39,16 @@ public class PythonCheckRegistrar implements PythonCustomRuleRepository {
 
     @Override
     public List<Class<?>> checkClasses() {
-        // Creating a new list is necessary to return a type
-        // List<Class> from the type List<Class<? extends PythonCheck>>
-        return new ArrayList<>(PythonRuleList.getPythonChecks());
+        List<Class<?>> checks = new ArrayList<>(PythonRuleList.getPythonChecks());
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            String names =
+                    checks.stream().map(Class::getSimpleName).collect(Collectors.joining(","));
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "checkClasses",
+                            "repo=" + repositoryKey() + " checks=" + names));
+        }
+        return checks;
     }
 }

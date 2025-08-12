@@ -22,10 +22,14 @@ package com.ibm.engine.language.python;
 import com.ibm.engine.detection.IType;
 import com.ibm.engine.detection.MatchContext;
 import com.ibm.engine.language.ILanguageTranslation;
+import com.ibm.util.CryptoTrace;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.python.api.symbols.Symbol;
 import org.sonar.plugins.python.api.tree.Argument;
 import org.sonar.plugins.python.api.tree.CallExpression;
@@ -36,22 +40,29 @@ import org.sonar.plugins.python.api.tree.Tree;
 
 public class PythonLanguageTranslation implements ILanguageTranslation<Tree> {
 
+    private static final Logger LOG = Loggers.get(PythonLanguageTranslation.class);
+
     @Nonnull
     @Override
     public Optional<String> getMethodName(
             @Nonnull MatchContext matchContext, @Nonnull Tree methodInvocation) {
+        Optional<String> res = Optional.empty();
         if (methodInvocation instanceof CallExpression callExpression) {
-            // We use "name" and not "fullyQualifiedName" to make it like in the Java implementation
             Symbol methodInvocationSymbol = callExpression.calleeSymbol();
             if (methodInvocationSymbol != null) {
-                return Optional.of(methodInvocationSymbol.name());
-            } else if (callExpression.callee()
-                    instanceof Name nameTree) { // Rare case when the symbol is not defined,
-                // sometimes for imported classes
-                return Optional.of(nameTree.name());
+                res = Optional.of(methodInvocationSymbol.name());
+            } else if (callExpression.callee() instanceof Name nameTree) {
+                res = Optional.of(nameTree.name());
             }
         }
-        return Optional.empty();
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "getMethodName",
+                            "name=" + res.orElse("<empty>")));
+        }
+        return res;
     }
 
     @Nonnull
@@ -62,18 +73,22 @@ public class PythonLanguageTranslation implements ILanguageTranslation<Tree> {
         // invocation `X25519PrivateKey.generate()`, it should return
         // `cryptography.hazmat.primitives.asymmetric.X25519PrivateKey`, and for
         // `global_var.bit_count()`, it should return the type of `global_var`.
+        Optional<IType> res = Optional.empty();
         if (methodInvocation instanceof CallExpression callExpression) {
-            // We will call `resolveTreeType`, that will return an IType accepting the function name
-            // "type" (like `cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicNumbers`) as
-            // well as the "invoked object type" (`cryptography.hazmat.primitives.asymmetric.dsa`)
-            // used in the rule's `forObjectTypes`
             if (callExpression.callee() instanceof QualifiedExpression qualifiedExpression) {
-                return PythonSemantic.resolveTreeType(qualifiedExpression.name());
+                res = PythonSemantic.resolveTreeType(qualifiedExpression.name());
             } else if (callExpression.callee() instanceof Name functionName) {
-                return PythonSemantic.resolveTreeType(functionName);
+                res = PythonSemantic.resolveTreeType(functionName);
             }
         }
-        return Optional.empty();
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "getInvokedObjectTypeString",
+                            "type=" + res.map(Object::toString).orElse("<empty>")));
+        }
+        return res;
     }
 
     @Override
@@ -81,37 +96,62 @@ public class PythonLanguageTranslation implements ILanguageTranslation<Tree> {
             @Nonnull MatchContext matchContext, @Nonnull Tree methodInvocation) {
         // TODO: This does not take the subscriptionIndex into account, so it will return an IType
         // accepting the type of all
-        return PythonSemantic.resolveTreeType(methodInvocation);
+        Optional<IType> res = PythonSemantic.resolveTreeType(methodInvocation);
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "getMethodReturnTypeString",
+                            "type=" + res.map(Object::toString).orElse("<empty>")));
+        }
+        return res;
     }
 
     @Override
     public @Nonnull List<IType> getMethodParameterTypes(
             @Nonnull MatchContext matchContext, @Nonnull Tree methodInvocation) {
+        List<IType> res = Collections.emptyList();
         if (methodInvocation instanceof CallExpression callExpression) {
             List<Argument> arguments = callExpression.arguments();
             if (!arguments.isEmpty()) {
-                return arguments.stream()
-                        .filter(RegularArgument.class::isInstance)
-                        // Should non-regular argument types be handled?
-                        .map(
-                                argument ->
-                                        PythonSemantic.resolveTreeType(
-                                                ((RegularArgument) argument).expression()))
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .toList();
+                res =
+                        arguments.stream()
+                                .filter(RegularArgument.class::isInstance)
+                                .map(
+                                        argument ->
+                                                PythonSemantic.resolveTreeType(
+                                                        ((RegularArgument) argument).expression()))
+                                .filter(Optional::isPresent)
+                                .map(Optional::get)
+                                .toList();
             }
         }
-        return Collections.emptyList();
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            String types = res.stream().map(Object::toString).collect(Collectors.joining(","));
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "getMethodParameterTypes",
+                            "types=" + types));
+        }
+        return res;
     }
 
     @Override
     public @Nonnull Optional<String> resolveIdentifierAsString(
             @Nonnull MatchContext matchContext, @Nonnull Tree name) {
+        Optional<String> res = Optional.empty();
         if (name instanceof Name nameTree) {
-            return Optional.of(nameTree.name());
+            res = Optional.of(nameTree.name());
         }
-        return Optional.empty();
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "resolveIdentifierAsString",
+                            "id=" + res.orElse("<empty>")));
+        }
+        return res;
     }
 
     @Override

@@ -26,13 +26,17 @@ import com.ibm.engine.detection.Finding;
 import com.ibm.engine.detection.Handler;
 import com.ibm.engine.language.IScanContext;
 import com.ibm.engine.rule.IDetectionRule;
+import com.ibm.util.CryptoTrace;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 
 public class DetectionExecutive<R, T, S, P>
         implements IStatusReporting<R, T, S, P>, IDomainEvent<Finding<R, T, S, P>> {
+    private static final Logger LOG = Loggers.get(DetectionExecutive.class);
     @Nonnull private final List<IObserver<Finding<R, T, S, P>>> listeners = new ArrayList<>();
 
     @Nonnull private final DetectionStore<R, T, S, P> rootDetectionStore;
@@ -52,6 +56,16 @@ public class DetectionExecutive<R, T, S, P>
     }
 
     public void start() {
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "start",
+                            "rule="
+                                    + rootDetectionStore.getDetectionRule().bundle().getIdentifier()
+                                    + " file="
+                                    + rootDetectionStore.getScanContext().getFilePath()));
+        }
         this.rootDetectionStore.analyse(tree);
     }
 
@@ -69,6 +83,18 @@ public class DetectionExecutive<R, T, S, P>
                 .forEach(
                         store -> {
                             final Finding<R, T, S, P> finding = new Finding<>(store);
+                            if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+                                LOG.trace(
+                                        CryptoTrace.fmt(
+                                                this,
+                                                "emitFinding",
+                                                "finding="
+                                                        + store.getStoreId()
+                                                        + " asset="
+                                                        + store.getDetectionValueContext()
+                                                                .getClass()
+                                                                .getSimpleName()));
+                            }
                             this.notify(finding);
                         });
     }

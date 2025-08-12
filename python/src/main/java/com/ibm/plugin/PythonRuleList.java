@@ -21,30 +21,64 @@ package com.ibm.plugin;
 
 import com.ibm.plugin.rules.PythonInventoryRule;
 import com.ibm.plugin.rules.PythonNoMD5UseRule;
+import com.ibm.util.CryptoTrace;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.python.api.PythonCheck;
 
 public final class PythonRuleList {
+
+    private static final Logger LOG = Loggers.get(PythonRuleList.class);
 
     private PythonRuleList() {}
 
     public static @Nonnull List<Class<?>> getChecks() {
         List<Class<? extends PythonCheck>> checks = new ArrayList<>();
-        checks.addAll(getPythonChecks());
-        checks.addAll(getPythonTestChecks());
-        return Collections.unmodifiableList(checks);
+        List<Class<? extends PythonCheck>> main = getPythonChecks();
+        List<Class<? extends PythonCheck>> test = getPythonTestChecks();
+        checks.addAll(main);
+        checks.addAll(test);
+        List<Class<?>> result = Collections.unmodifiableList(checks);
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            PythonRuleList.class,
+                            "getChecks",
+                            "size=" + result.size()));
+        }
+        return result;
     }
 
     /** These rules are going to target MAIN code only */
     public static @Nonnull List<Class<? extends PythonCheck>> getPythonChecks() {
-        return List.of(PythonInventoryRule.class, PythonNoMD5UseRule.class);
+        List<Class<? extends PythonCheck>> list =
+                List.of(PythonInventoryRule.class, PythonNoMD5UseRule.class);
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            String names = list.stream().map(Class::getSimpleName).collect(Collectors.joining(","));
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            PythonRuleList.class,
+                            "getPythonChecks",
+                            "size=" + list.size() + " classes=" + names));
+        }
+        return list;
     }
 
     /** These rules are going to target TEST code only */
     public static List<Class<? extends PythonCheck>> getPythonTestChecks() {
-        return List.of();
+        List<Class<? extends PythonCheck>> list = List.of();
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            PythonRuleList.class,
+                            "getPythonTestChecks",
+                            "size=" + list.size()));
+        }
+        return list;
     }
 }
