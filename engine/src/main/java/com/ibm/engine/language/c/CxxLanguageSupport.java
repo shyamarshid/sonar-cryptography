@@ -74,7 +74,8 @@ public class CxxLanguageSupport implements ILanguageSupport<Object, Object, Obje
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("CXX matcher built for callee '{}'", name);
                 }
-                return new MethodMatcher<>(MethodMatcher.ANY, name);
+                return new MethodMatcher<>(
+                        new String[] {MethodMatcher.ANY}, new String[] {name});
             }
         }
         return null;
