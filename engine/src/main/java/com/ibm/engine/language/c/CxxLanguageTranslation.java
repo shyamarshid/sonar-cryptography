@@ -7,18 +7,28 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import com.sonar.cxx.sslr.api.AstNode;
+import com.sonar.cxx.sslr.api.GenericTokenType;
 
 public class CxxLanguageTranslation implements ILanguageTranslation<Object> {
     @Nonnull
     @Override
-    public Optional<String> getMethodName(@Nonnull MatchContext matchContext, @Nonnull Object methodInvocation) {
+    public Optional<String> getMethodName(
+            @Nonnull MatchContext matchContext, @Nonnull Object methodInvocation) {
+        if (methodInvocation instanceof AstNode node) {
+            AstNode idNode = node.getLastChild(GenericTokenType.IDENTIFIER);
+            if (idNode != null) {
+                return Optional.ofNullable(idNode.getTokenValue());
+            }
+        }
         return Optional.empty();
     }
 
     @Nonnull
     @Override
-    public Optional<IType> getInvokedObjectTypeString(@Nonnull MatchContext matchContext, @Nonnull Object methodInvocation) {
-        return Optional.empty();
+    public Optional<IType> getInvokedObjectTypeString(
+            @Nonnull MatchContext matchContext, @Nonnull Object methodInvocation) {
+        return Optional.of((IType) typeString -> "wolfssl".equals(typeString));
     }
 
     @Nonnull
@@ -35,7 +45,11 @@ public class CxxLanguageTranslation implements ILanguageTranslation<Object> {
 
     @Nonnull
     @Override
-    public Optional<String> resolveIdentifierAsString(@Nonnull MatchContext matchContext, @Nonnull Object name) {
+    public Optional<String> resolveIdentifierAsString(
+            @Nonnull MatchContext matchContext, @Nonnull Object name) {
+        if (name instanceof AstNode node) {
+            return Optional.ofNullable(node.getTokenValue());
+        }
         return Optional.empty();
     }
 

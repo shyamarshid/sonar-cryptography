@@ -12,11 +12,17 @@ import com.ibm.engine.language.ILanguageSupport;
 import com.ibm.engine.language.ILanguageTranslation;
 import com.ibm.engine.language.IScanContext;
 import com.ibm.engine.rule.IDetectionRule;
+import com.sonar.cxx.sslr.api.AstNode;
+import com.sonar.cxx.sslr.api.GenericTokenType;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CxxLanguageSupport implements ILanguageSupport<Object, Object, Object, Object> {
+    private static final Logger LOG = LoggerFactory.getLogger(CxxLanguageSupport.class);
+
     @Nonnull private final Handler<Object, Object, Object, Object> handler;
 
     public CxxLanguageSupport() {
@@ -61,6 +67,16 @@ public class CxxLanguageSupport implements ILanguageSupport<Object, Object, Obje
     @Nullable
     @Override
     public MethodMatcher<Object> createMethodMatcherBasedOn(@Nonnull Object methodDefinition) {
+        if (methodDefinition instanceof AstNode node) {
+            AstNode idNode = node.getLastChild(GenericTokenType.IDENTIFIER);
+            if (idNode != null) {
+                String name = idNode.getTokenValue();
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("CXX matcher built for callee '{}'", name);
+                }
+                return new MethodMatcher<>(MethodMatcher.ANY, name);
+            }
+        }
         return null;
     }
 

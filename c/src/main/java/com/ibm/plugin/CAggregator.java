@@ -8,8 +8,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class CAggregator implements IAggregator {
+    private static final Logger LOG = LoggerFactory.getLogger(CAggregator.class);
+
     private static ILanguageSupport<Object, Object, Object, Object> cLanguageSupport =
             LanguageSupporter.cLanguageSupporter();
     private static List<INode> detectedNodes = new ArrayList<>();
@@ -18,6 +22,9 @@ public final class CAggregator implements IAggregator {
 
     public static void addNodes(@Nonnull List<INode> newNodes) {
         detectedNodes.addAll(newNodes);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Aggregated {} nodes", newNodes.size());
+        }
         IAggregator.log(newNodes);
     }
 
