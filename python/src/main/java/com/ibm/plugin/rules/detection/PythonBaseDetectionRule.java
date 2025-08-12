@@ -72,23 +72,6 @@ public abstract class PythonBaseDetectionRule extends PythonVisitorCheck
     }
 
     @Override
-    public void init() {
-        super.init();
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "init",
-                            "kinds=" + nodesToVisit()));
-        }
-    }
-
-    @Override
-    public List<Tree.Kind> nodesToVisit() {
-        return List.of(Tree.Kind.CALL_EXPRESSION);
-    }
-
-    @Override
     public void visitCallExpression(@Nonnull CallExpression tree) {
         if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
             String file = new PythonScanContext(this.getContext()).getFilePath();
