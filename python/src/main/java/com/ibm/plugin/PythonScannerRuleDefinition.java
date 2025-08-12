@@ -19,14 +19,18 @@
  */
 package com.ibm.plugin;
 
+import com.ibm.util.CryptoTrace;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import org.sonar.api.SonarRuntime;
 import org.sonar.api.server.rule.RulesDefinition;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonarsource.analyzer.commons.RuleMetadataLoader;
 
 public class PythonScannerRuleDefinition implements RulesDefinition {
+    private static final Logger LOG = Loggers.get(PythonScannerRuleDefinition.class);
     public static final String REPOSITORY_KEY = "sonar-python-crypto";
     public static final String REPOSITORY_NAME = "Sonar Cryptography";
 
@@ -43,6 +47,13 @@ public class PythonScannerRuleDefinition implements RulesDefinition {
 
     @Override
     public void define(Context context) {
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "define",
+                            "start repo=" + REPOSITORY_KEY + " lang=py"));
+        }
         NewRepository repository =
                 context.createRepository(REPOSITORY_KEY, "py").setName(REPOSITORY_NAME);
 
@@ -52,6 +63,16 @@ public class PythonScannerRuleDefinition implements RulesDefinition {
         setTemplates(repository);
 
         repository.done();
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "define",
+                            "end repo="
+                                    + REPOSITORY_KEY
+                                    + " lang=py rules="
+                                    + PythonRuleList.getChecks().size()));
+        }
     }
 
     private static void setTemplates(NewRepository repository) {

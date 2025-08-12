@@ -23,16 +23,21 @@ import com.ibm.engine.language.ILanguageSupport;
 import com.ibm.engine.language.LanguageSupporter;
 import com.ibm.mapper.model.INode;
 import com.ibm.output.IAggregator;
+import com.ibm.util.CryptoTrace;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.python.api.PythonCheck;
 import org.sonar.plugins.python.api.PythonVisitorContext;
 import org.sonar.plugins.python.api.symbols.Symbol;
 import org.sonar.plugins.python.api.tree.Tree;
 
 public final class PythonAggregator implements IAggregator {
+
+    private static final Logger LOG = Loggers.get(PythonAggregator.class);
 
     private static ILanguageSupport<PythonCheck, Tree, Symbol, PythonVisitorContext>
             pythonLanguageSupport = LanguageSupporter.pythonLanguageSupporter();
@@ -56,6 +61,16 @@ public final class PythonAggregator implements IAggregator {
     public static void addNodes(@Nonnull List<INode> newNodes) {
         detectedNodes.addAll(newNodes);
         IAggregator.log(newNodes);
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            PythonAggregator.class,
+                            "addNodes",
+                            "added="
+                                    + newNodes.size()
+                                    + " total="
+                                    + detectedNodes.size()));
+        }
     }
 
     public static void reset() {

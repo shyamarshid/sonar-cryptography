@@ -62,6 +62,7 @@ import com.ibm.output.cyclondx.builder.AlgorithmComponentBuilder;
 import com.ibm.output.cyclondx.builder.ProtocolComponentBuilder;
 import com.ibm.output.cyclondx.builder.RelatedCryptoMaterialComponentBuilder;
 import com.ibm.output.util.Utils;
+import com.ibm.util.CryptoTrace;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -90,11 +91,11 @@ import org.cyclonedx.model.OrganizationalEntity;
 import org.cyclonedx.model.Service;
 import org.cyclonedx.model.component.evidence.Occurrence;
 import org.cyclonedx.model.metadata.ToolInformation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 
 public class CBOMOutputFile implements IOutputFile {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CBOMOutputFile.class);
+    private static final Logger LOG = Loggers.get(CBOMOutputFile.class);
     private static final Version schema = Version.VERSION_16;
 
     @Nonnull private final Map<String, Component> components;
@@ -339,10 +340,13 @@ public class CBOMOutputFile implements IOutputFile {
         try {
             final String bomString = bomGenerator.toJsonString();
             FileUtils.write(file, bomString, StandardCharsets.UTF_8, false);
+            if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+                LOG.trace(CryptoTrace.fmt(this, "saveTo", "path=" + file.getAbsolutePath()));
+            }
         } catch (IOException e) {
-            LOGGER.error("Could not write CBOM file: {}", e.getMessage());
+            LOG.error("Could not write CBOM file: {}", e.getMessage());
         } catch (GeneratorException e) {
-            LOGGER.error("Could not generate CBOM: {}", e.getMessage());
+            LOG.error("Could not generate CBOM: {}", e.getMessage());
         }
     }
 

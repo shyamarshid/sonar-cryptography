@@ -27,14 +27,18 @@ import com.ibm.output.statistics.ScanStatistics;
 import com.ibm.plugin.CAggregator;
 import com.ibm.plugin.JavaAggregator;
 import com.ibm.plugin.PythonAggregator;
+import com.ibm.util.CryptoTrace;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 
 public final class ScannerManager {
+    private static final Logger LOG = Loggers.get(ScannerManager.class);
     private final IOutputFileFactory outputFileFactory;
 
     public ScannerManager(@Nullable IOutputFileFactory outputFileFactory) {
@@ -50,10 +54,20 @@ public final class ScannerManager {
 
     @Nonnull
     public IStatistics getStatistics() {
+        int py = PythonAggregator.getDetectedNodes().size();
+        int javaCount = JavaAggregator.getDetectedNodes().size();
+        int cCount = CAggregator.getDetectedNodes().size();
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "getStatistics",
+                            "PY=" + py + " JAVA=" + javaCount + " C=" + cCount));
+        }
         return new ScanStatistics(
-                () -> getAggregatedNodes().size(), // numberOfDetectedAssetsSupplier
+                () -> getAggregatedNodes().size(),
                 () ->
-                        getAggregatedNodes().stream() // numberOfAssetsPerTypeSupplier
+                        getAggregatedNodes().stream()
                                 .collect(
                                         Collectors.groupingBy(
                                                 INode::getKind, Collectors.counting())));

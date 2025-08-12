@@ -20,16 +20,20 @@
 package com.ibm.plugin;
 
 import com.ibm.output.cyclondx.CBOMOutputFileFactory;
+import com.ibm.plugin.CAggregator;
+import com.ibm.plugin.JavaAggregator;
+import com.ibm.plugin.PythonAggregator;
+import com.ibm.util.CryptoTrace;
 import java.io.File;
 import javax.annotation.Nonnull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.postjob.PostJob;
 import org.sonar.api.batch.postjob.PostJobContext;
 import org.sonar.api.batch.postjob.PostJobDescriptor;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 
 public class OutputFileJob implements PostJob {
-    private static final Logger LOGGER = LoggerFactory.getLogger(OutputFileJob.class);
+    private static final Logger LOG = Loggers.get(OutputFileJob.class);
 
     @Override
     public void describe(PostJobDescriptor postJobDescriptor) {
@@ -38,6 +42,9 @@ public class OutputFileJob implements PostJob {
 
     @Override
     public void execute(@Nonnull PostJobContext postJobContext) {
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(CryptoTrace.fmt(this, "execute", "start"));
+        }
         final String cbomFilename =
                 postJobContext
                         .config()
@@ -46,8 +53,25 @@ public class OutputFileJob implements PostJob {
         ScannerManager scannerManager = new ScannerManager(new CBOMOutputFileFactory());
         final File cbom = new File(cbomFilename + ".json");
         scannerManager.getOutputFile().saveTo(cbom);
-        LOGGER.info("CBOM was successfully generated '{}'.", cbom.getAbsolutePath());
-        scannerManager.getStatistics().print(LOGGER::info);
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            int py = PythonAggregator.getDetectedNodes().size();
+            int javaCount = JavaAggregator.getDetectedNodes().size();
+            int cCount = CAggregator.getDetectedNodes().size();
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "execute",
+                            "end cbom="
+                                    + cbom.getAbsolutePath()
+                                    + " PY="
+                                    + py
+                                    + " JAVA="
+                                    + javaCount
+                                    + " C="
+                                    + cCount));
+        }
+        LOG.info("CBOM was successfully generated '{}'.", cbom.getAbsolutePath());
+        scannerManager.getStatistics().print(LOG::info);
         scannerManager.reset();
     }
 }

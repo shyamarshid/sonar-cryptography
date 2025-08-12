@@ -20,13 +20,17 @@
 package com.ibm.output.statistics;
 
 import com.ibm.mapper.model.INode;
+import com.ibm.util.CryptoTrace;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 
 public final class ScanStatistics implements IStatistics {
+    private static final Logger LOG = Loggers.get(ScanStatistics.class);
     private final int numberOfDetectedAssets;
     @Nonnull private final Map<Class<? extends INode>, Long> numberOfAssetsPerType;
 
@@ -39,6 +43,13 @@ public final class ScanStatistics implements IStatistics {
 
     @Override
     public void print(@Nonnull Consumer<String> out) {
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "print",
+                            "assets=" + numberOfDetectedAssets));
+        }
         out.accept("========== CBOM Statistics ==========");
         out.accept(String.format("%-33s: %s", "Detected Assets", numberOfDetectedAssets));
         for (Map.Entry<Class<? extends INode>, Long> entry : numberOfAssetsPerType.entrySet()) {

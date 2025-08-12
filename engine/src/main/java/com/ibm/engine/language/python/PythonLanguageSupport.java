@@ -33,10 +33,13 @@ import com.ibm.engine.language.ILanguageSupport;
 import com.ibm.engine.language.ILanguageTranslation;
 import com.ibm.engine.language.IScanContext;
 import com.ibm.engine.rule.IDetectionRule;
+import com.ibm.util.CryptoTrace;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.python.api.PythonCheck;
 import org.sonar.plugins.python.api.PythonVisitorContext;
 import org.sonar.plugins.python.api.symbols.Symbol;
@@ -48,6 +51,7 @@ import org.sonar.plugins.python.api.tree.Tree;
 
 public class PythonLanguageSupport
         implements ILanguageSupport<PythonCheck, Tree, Symbol, PythonVisitorContext> {
+    private static final Logger LOG = Loggers.get(PythonLanguageSupport.class);
     @Nonnull private final Handler<PythonCheck, Tree, Symbol, PythonVisitorContext> handler;
 
     public PythonLanguageSupport() {
@@ -126,6 +130,14 @@ public class PythonLanguageSupport
                                 .map(param -> ANY)
                                 .toArray(String[]::new);
                 parameterTypeList = new LinkedList<>(Arrays.asList(parameters));
+            }
+
+            if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "createMethodMatcherBasedOn",
+                                "callee=" + name + " kind=" + methodDefinition.getKind()));
             }
 
             return new MethodMatcher<>(invocationObjectName, name, parameterTypeList);

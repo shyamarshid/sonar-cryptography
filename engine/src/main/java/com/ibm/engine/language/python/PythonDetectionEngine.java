@@ -25,22 +25,29 @@ import com.ibm.engine.hooks.MethodInvocationHookWithReturnResolvement;
 import com.ibm.engine.model.factory.IValueFactory;
 import com.ibm.engine.rule.*;
 import com.ibm.engine.rule.Parameter;
+import com.ibm.util.CryptoTrace;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.python.api.PythonCheck;
 import org.sonar.plugins.python.api.PythonVisitorContext;
 import org.sonar.plugins.python.api.symbols.Symbol;
 import org.sonar.plugins.python.api.tree.*;
 
 public class PythonDetectionEngine implements IDetectionEngine<Tree, Symbol> {
+    private static final Logger LOG = Loggers.get(PythonDetectionEngine.class);
     @Nonnull
     private final DetectionStore<PythonCheck, Tree, Symbol, PythonVisitorContext> detectionStore;
 
     @Nonnull private final Handler<PythonCheck, Tree, Symbol, PythonVisitorContext> handler;
+    private final Set<String> noMatchLogged = new HashSet<>();
 
     public PythonDetectionEngine(
             @Nonnull DetectionStore<PythonCheck, Tree, Symbol, PythonVisitorContext> detectionStore,
@@ -56,12 +63,66 @@ public class PythonDetectionEngine implements IDetectionEngine<Tree, Symbol> {
 
     @Override
     public void run(@Nonnull TraceSymbol<Symbol> traceSymbol, @Nonnull Tree tree) {
+        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+            LOG.trace(
+                    CryptoTrace.fmt(
+                            this,
+                            "run",
+                            "file="
+                                    + detectionStore.getScanContext().getFilePath()
+                                    + " kind="
+                                    + tree.getKind()));
+        }
         if (tree instanceof CallExpression callExpressionTree) {
             handler.addCallToCallStack(callExpressionTree, detectionStore.getScanContext());
-            if (detectionStore
-                    .getDetectionRule()
-                    .match(callExpressionTree, handler.getLanguageSupport().translation())) {
+            String callee =
+                    handler.getLanguageSupport()
+                            .translation()
+                            .getMethodName(
+                                    MatchContext.build(false, detectionStore.getDetectionRule()),
+                                    callExpressionTree)
+                            .orElse("<unknown>");
+            boolean matched =
+                    detectionStore
+                            .getDetectionRule()
+                            .match(callExpressionTree, handler.getLanguageSupport().translation());
+            if (matched) {
                 this.analyseExpression(traceSymbol, callExpressionTree);
+                if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+                    String asset =
+                            detectionStore
+                                    .getDetectionValueContext()
+                                    .getClass()
+                                    .getSimpleName();
+                    String alg =
+                            detectionStore.getDetectionValues().stream()
+                                    .findFirst()
+                                    .map(v -> v.asString())
+                                    .orElse("");
+                    LOG.trace(
+                            CryptoTrace.fmt(
+                                    this,
+                                    "run",
+                                    "MATCH rule="
+                                            + detectionStore
+                                                    .getDetectionRule()
+                                                    .bundle()
+                                                    .getIdentifier()
+                                            + " callee="
+                                            + callee
+                                            + " asset="
+                                            + asset
+                                            + " alg="
+                                            + alg));
+                }
+            } else {
+                if (LOG.isTraceEnabled()
+                        && CryptoTrace.isEnabled()
+                        && noMatchLogged.add(callee)) {
+                    LOG.trace(
+                            CryptoTrace.fmt(
+                                    this, "run", "NO-MATCH callee=" + callee));
+                }
             }
         }
     }
