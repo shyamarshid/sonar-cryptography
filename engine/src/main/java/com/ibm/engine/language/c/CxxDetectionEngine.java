@@ -3,21 +3,24 @@ package com.ibm.engine.language.c;
 import com.ibm.engine.detection.DetectionStore;
 import com.ibm.engine.detection.Handler;
 import com.ibm.engine.detection.IDetectionEngine;
-import com.ibm.engine.detection.IType;
-import com.ibm.engine.detection.MatchContext;
-import com.ibm.engine.detection.MethodMatcher;
-import com.ibm.engine.rule.Parameter;
 import com.ibm.engine.detection.ResolvedValue;
 import com.ibm.engine.detection.TraceSymbol;
-import com.ibm.engine.executive.DetectionExecutive;
+import com.ibm.engine.detection.MethodDetection;
+import com.ibm.engine.rule.Parameter;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.sonar.cxx.sslr.api.AstNode;
+import org.sonar.cxx.parser.CxxPunctuator;
 
 public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
+    private static final Logger LOG = LoggerFactory.getLogger(CxxDetectionEngine.class);
+
     private final DetectionStore<Object, Object, Object, Object> detectionStore;
     private final Handler<Object, Object, Object, Object> handler;
 
@@ -29,10 +32,38 @@ public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
     }
 
     @Override
-    public void run(@Nonnull Object tree) {}
+    public void run(@Nonnull Object tree) {
+        run(TraceSymbol.createStart(), tree);
+    }
 
     @Override
-    public void run(@Nonnull TraceSymbol<Object> traceSymbol, @Nonnull Object tree) {}
+    public void run(@Nonnull TraceSymbol<Object> traceSymbol, @Nonnull Object tree) {
+        if (tree instanceof AstNode node) {
+            if (node.getFirstChild(CxxPunctuator.BR_LEFT) != null) {
+                handler.addCallToCallStack(node, detectionStore.getScanContext());
+                if (detectionStore
+                        .getDetectionRule()
+                        .match(node, handler.getLanguageSupport().translation())) {
+                    MethodDetection<Object> methodDetection = new MethodDetection<>(node, null);
+                    detectionStore.onReceivingNewDetection(methodDetection);
+                    detectionStore
+                            .getActionValue()
+                            .ifPresent(
+                                    action -> {
+                                        if (LOG.isTraceEnabled()) {
+                                            LOG.trace(
+                                                    "C MATCH {} -> {}",
+                                                    detectionStore
+                                                            .getDetectionRule()
+                                                            .bundle()
+                                                            .getIdentifier(),
+                                                    action.asString());
+                                        }
+                                    });
+                }
+            }
+        }
+    }
 
     @Override
     public @Nullable Object extractArgumentFromMethodCaller(
