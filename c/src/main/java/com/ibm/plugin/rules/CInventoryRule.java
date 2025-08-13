@@ -29,7 +29,6 @@ public class CInventoryRule extends SquidCheck<com.sonar.cxx.sslr.api.Grammar>
 
     private static final Logger LOG = Loggers.get(CInventoryRule.class);
     private static final String ORIGIN = CInventoryRule.class.getSimpleName() + ".java";
-    LOG.info("CXX probe: CInventoryRule#before_init");
 
     @Nonnull private final CxxTranslationProcess translationProcess = new CxxTranslationProcess();
 
