@@ -55,12 +55,20 @@ public class PythonLanguageTranslation implements ILanguageTranslation<Tree> {
                 res = Optional.of(nameTree.name());
             }
         }
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "getMethodName",
-                            "name=" + res.orElse("<empty>")));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "getMethodName",
+                                "name=" + res.orElse("<empty>")));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "getMethodName",
+                                "name=" + res.orElse("<empty>")));
+            }
         }
         return res;
     }
@@ -81,12 +89,20 @@ public class PythonLanguageTranslation implements ILanguageTranslation<Tree> {
                 res = PythonSemantic.resolveTreeType(functionName);
             }
         }
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "getInvokedObjectTypeString",
-                            "type=" + res.map(Object::toString).orElse("<empty>")));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "getInvokedObjectTypeString",
+                                "type=" + res.map(Object::toString).orElse("<empty>")));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "getInvokedObjectTypeString",
+                                "type=" + res.map(Object::toString).orElse("<empty>")));
+            }
         }
         return res;
     }
@@ -97,12 +113,20 @@ public class PythonLanguageTranslation implements ILanguageTranslation<Tree> {
         // TODO: This does not take the subscriptionIndex into account, so it will return an IType
         // accepting the type of all
         Optional<IType> res = PythonSemantic.resolveTreeType(methodInvocation);
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "getMethodReturnTypeString",
-                            "type=" + res.map(Object::toString).orElse("<empty>")));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "getMethodReturnTypeString",
+                                "type=" + res.map(Object::toString).orElse("<empty>")));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "getMethodReturnTypeString",
+                                "type=" + res.map(Object::toString).orElse("<empty>")));
+            }
         }
         return res;
     }
@@ -126,13 +150,21 @@ public class PythonLanguageTranslation implements ILanguageTranslation<Tree> {
                                 .toList();
             }
         }
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+        if (CryptoTrace.isEnabled()) {
             String types = res.stream().map(Object::toString).collect(Collectors.joining(","));
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "getMethodParameterTypes",
-                            "types=" + types));
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "getMethodParameterTypes",
+                                "types=" + types));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "getMethodParameterTypes",
+                                "types=" + types));
+            }
         }
         return res;
     }
@@ -144,12 +176,20 @@ public class PythonLanguageTranslation implements ILanguageTranslation<Tree> {
         if (name instanceof Name nameTree) {
             res = Optional.of(nameTree.name());
         }
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "resolveIdentifierAsString",
-                            "id=" + res.orElse("<empty>")));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "resolveIdentifierAsString",
+                                "id=" + res.orElse("<empty>")));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "resolveIdentifierAsString",
+                                "id=" + res.orElse("<empty>")));
+            }
         }
         return res;
     }

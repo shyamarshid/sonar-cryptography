@@ -61,15 +61,26 @@ public final class PythonAggregator implements IAggregator {
     public static void addNodes(@Nonnull List<INode> newNodes) {
         detectedNodes.addAll(newNodes);
         IAggregator.log(newNodes);
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            PythonAggregator.class,
-                            "addNodes",
-                            "added="
-                                    + newNodes.size()
-                                    + " total="
-                                    + detectedNodes.size()));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                PythonAggregator.class,
+                                "addNodes",
+                                "added="
+                                        + newNodes.size()
+                                        + " total="
+                                        + detectedNodes.size()));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                PythonAggregator.class,
+                                "addNodes",
+                                "added="
+                                        + newNodes.size()
+                                        + " total="
+                                        + detectedNodes.size()));
+            }
         }
     }
 

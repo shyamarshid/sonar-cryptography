@@ -42,8 +42,12 @@ public class OutputFileJob implements PostJob {
 
     @Override
     public void execute(@Nonnull PostJobContext postJobContext) {
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(CryptoTrace.fmt(this, "execute", "start"));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(CryptoTrace.fmt(this, "execute", "start"));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(CryptoTrace.fmt(this, "execute", "start"));
+            }
         }
         final String cbomFilename =
                 postJobContext
@@ -53,22 +57,37 @@ public class OutputFileJob implements PostJob {
         ScannerManager scannerManager = new ScannerManager(new CBOMOutputFileFactory());
         final File cbom = new File(cbomFilename + ".json");
         scannerManager.getOutputFile().saveTo(cbom);
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+        if (CryptoTrace.isEnabled()) {
             int py = PythonAggregator.getDetectedNodes().size();
             int javaCount = JavaAggregator.getDetectedNodes().size();
             int cCount = CAggregator.getDetectedNodes().size();
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "execute",
-                            "end cbom="
-                                    + cbom.getAbsolutePath()
-                                    + " PY="
-                                    + py
-                                    + " JAVA="
-                                    + javaCount
-                                    + " C="
-                                    + cCount));
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "execute",
+                                "end cbom="
+                                        + cbom.getAbsolutePath()
+                                        + " PY="
+                                        + py
+                                        + " JAVA="
+                                        + javaCount
+                                        + " C="
+                                        + cCount));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "execute",
+                                "end cbom="
+                                        + cbom.getAbsolutePath()
+                                        + " PY="
+                                        + py
+                                        + " JAVA="
+                                        + javaCount
+                                        + " C="
+                                        + cCount));
+            }
         }
         LOG.info("CBOM was successfully generated '{}'.", cbom.getAbsolutePath());
         scannerManager.getStatistics().print(LOG::info);

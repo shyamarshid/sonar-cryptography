@@ -73,32 +73,53 @@ public abstract class PythonBaseDetectionRule extends PythonVisitorCheck
 
     @Override
     public void visitCallExpression(@Nonnull CallExpression tree) {
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+        if (CryptoTrace.isEnabled()) {
             String file = new PythonScanContext(this.getContext()).getFilePath();
             int line = tree.firstToken().line();
             String callee =
                     Optional.ofNullable(tree.calleeSymbol())
                             .map(Symbol::name)
                             .orElse("<unknown>");
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "visitCallExpression",
-                            "file=" + file + ":" + line + " callee=" + callee));
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "visitCallExpression",
-                            "running " + detectionRules.size() + " detection rules"));
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "visitCallExpression",
+                                "file=" + file + ":" + line + " callee=" + callee));
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "visitCallExpression",
+                                "running " + detectionRules.size() + " detection rules"));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "visitCallExpression",
+                                "file=" + file + ":" + line + " callee=" + callee));
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "visitCallExpression",
+                                "running " + detectionRules.size() + " detection rules"));
+            }
         }
         detectionRules.forEach(
                 rule -> {
-                    if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-                        LOG.trace(
-                                CryptoTrace.fmt(
-                                        this,
-                                        "visitCallExpression",
-                                        "rule=" + rule.bundle().getIdentifier()));
+                    if (CryptoTrace.isEnabled()) {
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace(
+                                    CryptoTrace.fmt(
+                                            this,
+                                            "visitCallExpression",
+                                            "rule=" + rule.bundle().getIdentifier()));
+                        } else if (LOG.isDebugEnabled()) {
+                            LOG.debug(
+                                    CryptoTrace.fmt(
+                                            this,
+                                            "visitCallExpression",
+                                            "rule=" + rule.bundle().getIdentifier()));
+                        }
                     }
                     DetectionExecutive<PythonCheck, Tree, Symbol, PythonVisitorContext>
                             detectionExecutive =
@@ -121,15 +142,26 @@ public abstract class PythonBaseDetectionRule extends PythonVisitorCheck
     @Override
     public void update(@Nonnull Finding<PythonCheck, Tree, Symbol, PythonVisitorContext> finding) {
         List<INode> nodes = pythonTranslationProcess.initiate(finding.detectionStore());
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            nodes.forEach(
-                    n ->
-                            LOG.trace(
-                                    CryptoTrace.fmt(
-                                            this,
-                                            "update",
-                                            "asset="
-                                                    + n.getKind().getSimpleName())));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                nodes.forEach(
+                        n ->
+                                LOG.trace(
+                                        CryptoTrace.fmt(
+                                                this,
+                                                "update",
+                                                "asset="
+                                                        + n.getKind().getSimpleName())));
+            } else if (LOG.isDebugEnabled()) {
+                nodes.forEach(
+                        n ->
+                                LOG.debug(
+                                        CryptoTrace.fmt(
+                                                this,
+                                                "update",
+                                                "asset="
+                                                        + n.getKind().getSimpleName())));
+            }
         }
         if (isInventory) {
             PythonAggregator.addNodes(nodes);

@@ -57,12 +57,20 @@ public final class ScannerManager {
         int py = PythonAggregator.getDetectedNodes().size();
         int javaCount = JavaAggregator.getDetectedNodes().size();
         int cCount = CAggregator.getDetectedNodes().size();
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "getStatistics",
-                            "PY=" + py + " JAVA=" + javaCount + " C=" + cCount));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "getStatistics",
+                                "PY=" + py + " JAVA=" + javaCount + " C=" + cCount));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "getStatistics",
+                                "PY=" + py + " JAVA=" + javaCount + " C=" + cCount));
+            }
         }
         return new ScanStatistics(
                 () -> getAggregatedNodes().size(),

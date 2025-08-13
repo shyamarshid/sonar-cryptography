@@ -44,12 +44,20 @@ public final class PythonRuleList {
         checks.addAll(main);
         checks.addAll(test);
         List<Class<?>> result = Collections.unmodifiableList(checks);
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            PythonRuleList.class,
-                            "getChecks",
-                            "size=" + result.size()));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                PythonRuleList.class,
+                                "getChecks",
+                                "size=" + result.size()));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                PythonRuleList.class,
+                                "getChecks",
+                                "size=" + result.size()));
+            }
         }
         return result;
     }
@@ -58,13 +66,21 @@ public final class PythonRuleList {
     public static @Nonnull List<Class<? extends PythonCheck>> getPythonChecks() {
         List<Class<? extends PythonCheck>> list =
                 List.of(PythonInventoryRule.class, PythonNoMD5UseRule.class);
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+        if (CryptoTrace.isEnabled()) {
             String names = list.stream().map(Class::getSimpleName).collect(Collectors.joining(","));
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            PythonRuleList.class,
-                            "getPythonChecks",
-                            "size=" + list.size() + " classes=" + names));
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                PythonRuleList.class,
+                                "getPythonChecks",
+                                "size=" + list.size() + " classes=" + names));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                PythonRuleList.class,
+                                "getPythonChecks",
+                                "size=" + list.size() + " classes=" + names));
+            }
         }
         return list;
     }
@@ -72,12 +88,20 @@ public final class PythonRuleList {
     /** These rules are going to target TEST code only */
     public static List<Class<? extends PythonCheck>> getPythonTestChecks() {
         List<Class<? extends PythonCheck>> list = List.of();
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            PythonRuleList.class,
-                            "getPythonTestChecks",
-                            "size=" + list.size()));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                PythonRuleList.class,
+                                "getPythonTestChecks",
+                                "size=" + list.size()));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                PythonRuleList.class,
+                                "getPythonTestChecks",
+                                "size=" + list.size()));
+            }
         }
         return list;
     }

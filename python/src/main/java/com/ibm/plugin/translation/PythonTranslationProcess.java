@@ -53,12 +53,20 @@ public final class PythonTranslationProcess
             @Nonnull
                     DetectionStore<PythonCheck, Tree, Symbol, PythonVisitorContext>
                             rootDetectionStore) {
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "initiate",
-                            "finding=" + rootDetectionStore.getStoreId()));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "initiate",
+                                "finding=" + rootDetectionStore.getStoreId()));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "initiate",
+                                "finding=" + rootDetectionStore.getStoreId()));
+            }
         }
         final PythonTranslator pythonTranslator = new PythonTranslator();
         final List<INode> translatedValues = pythonTranslator.translate(rootDetectionStore);
@@ -71,12 +79,20 @@ public final class PythonTranslationProcess
         final List<INode> enrichedValues = Enricher.enrich(reorganizedValues).stream().toList();
         Utils.printNodeTree("  enriched  ", enrichedValues);
 
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "initiate",
-                            "nodes=" + enrichedValues.size()));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "initiate",
+                                "nodes=" + enrichedValues.size()));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "initiate",
+                                "nodes=" + enrichedValues.size()));
+            }
         }
         return Collections.unmodifiableCollection(enrichedValues).stream().toList();
     }
