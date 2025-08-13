@@ -13,13 +13,15 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import com.sonar.cxx.sslr.api.AstNode;
+import com.sonar.cxx.sslr.api.GenericTokenType;
 import org.sonar.cxx.parser.CxxPunctuator;
 
 public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
-    private static final Logger LOG = LoggerFactory.getLogger(CxxDetectionEngine.class);
+    private static final Logger LOG = Loggers.get(CxxDetectionEngine.class);
+    private static final String ORIGIN = CxxDetectionEngine.class.getSimpleName() + ".java";
 
     private final DetectionStore<Object, Object, Object, Object> detectionStore;
     private final Handler<Object, Object, Object, Object> handler;
@@ -38,27 +40,56 @@ public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
 
     @Override
     public void run(@Nonnull TraceSymbol<Object> traceSymbol, @Nonnull Object tree) {
+        String filePath = detectionStore.getScanContext().getFilePath();
+        String line = "<n/a>";
+        String nodeKind = "<n/a>";
+        if (tree instanceof AstNode node) {
+            line = node.getToken() != null ? String.valueOf(node.getToken().getLine()) : "<n/a>";
+            nodeKind = node.getType().toString();
+        }
+        LOG.info(
+                "CXX {}: event=<engine-run> src={} nodeKind={}",
+                ORIGIN,
+                filePath + ":" + line,
+                nodeKind);
         if (tree instanceof AstNode node) {
             if (node.getFirstChild(CxxPunctuator.BR_LEFT) != null) {
                 handler.addCallToCallStack(node, detectionStore.getScanContext());
                 if (detectionStore
                         .getDetectionRule()
                         .match(node, handler.getLanguageSupport().translation())) {
+                    AstNode idNode = node.getLastChild(GenericTokenType.IDENTIFIER);
+                    String callee = idNode != null ? idNode.getTokenValue() : "<n/a>";
                     MethodDetection<Object> methodDetection = new MethodDetection<>(node, null);
                     detectionStore.onReceivingNewDetection(methodDetection);
                     detectionStore
                             .getActionValue()
                             .ifPresent(
                                     action -> {
-                                        if (LOG.isTraceEnabled()) {
-                                            LOG.trace(
-                                                    "C MATCH {} -> {}",
-                                                    detectionStore
-                                                            .getDetectionRule()
-                                                            .bundle()
-                                                            .getIdentifier(),
-                                                    action.asString());
-                                        }
+                                        String asset =
+                                                detectionStore
+                                                        .getDetectionRule()
+                                                        .detectionValueContext()
+                                                        .type()
+                                                        .getSimpleName();
+                                        LOG.info(
+                                                "CXX {}: event=<match> src={} rule={}/{} callee={} asset={} alg={}",
+                                                ORIGIN,
+                                                filePath + ":" + line,
+                                                detectionStore
+                                                        .getDetectionRule()
+                                                        .bundle()
+                                                        .getIdentifier(),
+                                                detectionStore.getDetectionRule().getClass().getSimpleName(),
+                                                callee,
+                                                asset,
+                                                action.asString());
+                                        LOG.info(
+                                                "CXX {}: event=<emit-finding> src={} id={} asset={}",
+                                                ORIGIN,
+                                                filePath + ":" + line,
+                                                detectionStore.getStoreId(),
+                                                asset);
                                     });
                 }
             }

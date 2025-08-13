@@ -8,11 +8,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 
 public final class CAggregator implements IAggregator {
-    private static final Logger LOG = LoggerFactory.getLogger(CAggregator.class);
+    private static final Logger LOG = Loggers.get(CAggregator.class);
+    private static final String ORIGIN = CAggregator.class.getSimpleName() + ".java";
 
     private static ILanguageSupport<Object, Object, Object, Object> cLanguageSupport =
             LanguageSupporter.cLanguageSupporter();
@@ -22,10 +23,12 @@ public final class CAggregator implements IAggregator {
 
     public static void addNodes(@Nonnull List<INode> newNodes) {
         detectedNodes.addAll(newNodes);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Aggregated {} nodes", newNodes.size());
-        }
         IAggregator.log(newNodes);
+        LOG.info(
+                "CXX {}: event=<aggregate> added={} total={}",
+                ORIGIN,
+                newNodes.size(),
+                detectedNodes.size());
     }
 
     @Nonnull

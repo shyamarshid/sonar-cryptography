@@ -9,19 +9,28 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import com.sonar.cxx.sslr.api.AstNode;
 import com.sonar.cxx.sslr.api.GenericTokenType;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 
 public class CxxLanguageTranslation implements ILanguageTranslation<Object> {
+    private static final Logger LOG = Loggers.get(CxxLanguageTranslation.class);
+    private static final String ORIGIN = CxxLanguageTranslation.class.getSimpleName() + ".java";
     @Nonnull
     @Override
     public Optional<String> getMethodName(
             @Nonnull MatchContext matchContext, @Nonnull Object methodInvocation) {
+        Optional<String> result = Optional.empty();
         if (methodInvocation instanceof AstNode node) {
             AstNode idNode = node.getLastChild(GenericTokenType.IDENTIFIER);
             if (idNode != null) {
-                return Optional.ofNullable(idNode.getTokenValue());
+                result = Optional.ofNullable(idNode.getTokenValue());
             }
         }
-        return Optional.empty();
+        LOG.info(
+                "CXX {}: event=<get-method-name> name={}",
+                ORIGIN,
+                result.orElse(""));
+        return result;
     }
 
     @Nonnull
@@ -40,28 +49,48 @@ public class CxxLanguageTranslation implements ILanguageTranslation<Object> {
     @Nonnull
     @Override
     public List<IType> getMethodParameterTypes(@Nonnull MatchContext matchContext, @Nonnull Object methodInvocation) {
-        return Collections.emptyList();
+        List<IType> result = Collections.emptyList();
+        LOG.info(
+                "CXX {}: event=<resolve> kind=param out={}",
+                ORIGIN,
+                result.size());
+        return result;
     }
 
     @Nonnull
     @Override
     public Optional<String> resolveIdentifierAsString(
             @Nonnull MatchContext matchContext, @Nonnull Object name) {
+        Optional<String> result = Optional.empty();
         if (name instanceof AstNode node) {
-            return Optional.ofNullable(node.getTokenValue());
+            result = Optional.ofNullable(node.getTokenValue());
         }
-        return Optional.empty();
+        LOG.info(
+                "CXX {}: event=<resolve> kind=value out={}",
+                ORIGIN,
+                result.orElse(""));
+        return result;
     }
 
     @Nonnull
     @Override
     public Optional<String> getEnumIdentifierName(@Nonnull MatchContext matchContext, @Nonnull Object enumIdentifier) {
-        return Optional.empty();
+        Optional<String> result = Optional.empty();
+        LOG.info(
+                "CXX {}: event=<resolve> kind=enum out={}",
+                ORIGIN,
+                "");
+        return result;
     }
 
     @Nonnull
     @Override
     public Optional<String> getEnumClassName(@Nonnull MatchContext matchContext, @Nonnull Object enumClass) {
-        return Optional.empty();
+        Optional<String> result = Optional.empty();
+        LOG.info(
+                "CXX {}: event=<resolve> kind=enum out={}",
+                ORIGIN,
+                "");
+        return result;
     }
 }

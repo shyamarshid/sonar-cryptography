@@ -17,11 +17,12 @@ import com.sonar.cxx.sslr.api.GenericTokenType;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 
 public class CxxLanguageSupport implements ILanguageSupport<Object, Object, Object, Object> {
-    private static final Logger LOG = LoggerFactory.getLogger(CxxLanguageSupport.class);
+    private static final Logger LOG = Loggers.get(CxxLanguageSupport.class);
+    private static final String ORIGIN = CxxLanguageSupport.class.getSimpleName() + ".java";
 
     @Nonnull private final Handler<Object, Object, Object, Object> handler;
 
@@ -71,6 +72,13 @@ public class CxxLanguageSupport implements ILanguageSupport<Object, Object, Obje
             AstNode idNode = node.getLastChild(GenericTokenType.IDENTIFIER);
             if (idNode != null) {
                 String name = idNode.getTokenValue();
+                String filePath = "<n/a>";
+                String line = idNode.getToken() != null ? String.valueOf(idNode.getToken().getLine()) : "<n/a>";
+                LOG.info(
+                        "CXX {}: event=<matcher> src={} callee={}",
+                        ORIGIN,
+                        filePath + ":" + line,
+                        name);
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("CXX matcher built for callee '{}'", name);
                 }

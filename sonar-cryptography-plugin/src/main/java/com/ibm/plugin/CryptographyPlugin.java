@@ -19,8 +19,8 @@
  */
 package com.ibm.plugin;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.api.Plugin;
 import org.sonar.api.SonarProduct;
 import org.sonar.api.SonarRuntime;
@@ -30,14 +30,18 @@ import com.ibm.plugin.CScannerRuleDefinition;
 public class CryptographyPlugin implements Plugin {
 
     @SuppressWarnings({"java:S1874"})
-    private static final Logger LOGGER = LoggerFactory.getLogger(CryptographyPlugin.class);
+    private static final Logger LOG = Loggers.get(CryptographyPlugin.class);
+    private static final String ORIGIN = CryptographyPlugin.class.getSimpleName() + ".java";
 
     @Override
     public void define(Context context) {
         SonarRuntime runtime = context.getRuntime();
         SonarProduct product = runtime.getProduct();
 
-        LOGGER.info("Sonar Cryptography initialized in context (" + product + ")");
+        LOG.info(
+                "CXX {}: event=<bootstrap> product={}",
+                ORIGIN,
+                product);
 
         context.addExtensions(Configuration.getPropertyDefinitions()); // add configuration
         context.addExtensions(

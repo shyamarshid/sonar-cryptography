@@ -16,6 +16,7 @@ import org.sonar.plugins.cxx.CxxLanguage;
 public final class CScannerRuleDefinition implements RulesDefinition {
 
   private static final Logger LOG = Loggers.get(CScannerRuleDefinition.class);
+  private static final String ORIGIN = CScannerRuleDefinition.class.getSimpleName() + ".java";
 
   /** Keep public: CCheckRegistrar uses them */
   public static final String REPOSITORY_KEY  = "sonar-c-crypto";
@@ -46,9 +47,11 @@ public final class CScannerRuleDefinition implements RulesDefinition {
 
     repo.done();
 
-    LOG.info("Registered C repository '{}' with rules {}",
+    LOG.info(
+        "CXX {}: event=<repo-registered> repoKey={} rules=[{}]",
+        ORIGIN,
         REPOSITORY_KEY,
-        repo.rules().stream().map(NewRule::key).collect(Collectors.toList()));
+        repo.rules().stream().map(NewRule::key).collect(Collectors.joining(",")));
   }
 
   private static String readResource(String path) {

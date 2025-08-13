@@ -33,6 +33,7 @@ import org.sonar.api.utils.log.Loggers;
 
 public class OutputFileJob implements PostJob {
     private static final Logger LOG = Loggers.get(OutputFileJob.class);
+    private static final String ORIGIN = OutputFileJob.class.getSimpleName() + ".java";
 
     @Override
     public void describe(PostJobDescriptor postJobDescriptor) {
@@ -47,14 +48,15 @@ public class OutputFileJob implements PostJob {
                         .get(Constants.CBOM_OUTPUT_NAME)
                         .orElse(Constants.CBOM_OUTPUT_NAME_DEFAULT);
         ScannerManager scannerManager = new ScannerManager(new CBOMOutputFileFactory());
-        LOG.info(
-                "CBOM write: PY={} JAVA={} C={}",
-                PythonAggregator.getDetectedNodes().size(),
-                JavaAggregator.getDetectedNodes().size(),
-                CAggregator.getDetectedNodes().size());
         final File cbom = new File(cbomFilename + ".json");
         scannerManager.getOutputFile().saveTo(cbom);
-        LOG.info("CBOM was successfully generated '{}'.", cbom.getAbsolutePath());
+        LOG.info(
+                "CXX {}: event=<cbom-write> path={} JAVA={} PY={} C={}",
+                ORIGIN,
+                cbom.getAbsolutePath(),
+                JavaAggregator.getDetectedNodes().size(),
+                PythonAggregator.getDetectedNodes().size(),
+                CAggregator.getDetectedNodes().size());
         scannerManager.getStatistics().print(LOG::info);
         scannerManager.reset();
     }
