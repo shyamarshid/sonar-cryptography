@@ -40,6 +40,7 @@ public final class ScannerManager {
     private final IOutputFileFactory outputFileFactory;
 
     private static final Logger LOG = Loggers.get(ScannerManager.class);
+    private static final String ORIGIN = ScannerManager.class.getSimpleName() + ".java";
 
     public ScannerManager(@Nullable IOutputFileFactory outputFileFactory) {
         this.outputFileFactory = outputFileFactory;
@@ -73,9 +74,10 @@ public final class ScannerManager {
         List<INode> pyNodes = PythonAggregator.getDetectedNodes();
         List<INode> cNodes = CAggregator.getDetectedNodes();
         LOG.info(
-                "ScannerManager: totals -> PY={} JAVA={} C={}",
-                pyNodes.size(),
+                "CXX {}: event=<totals> JAVA={} PY={} C={}",
+                ORIGIN,
                 javaNodes.size(),
+                pyNodes.size(),
                 cNodes.size());
         List<INode> nodes = new ArrayList<>();
         nodes.addAll(javaNodes);
