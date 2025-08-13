@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.python.api.PythonCheck;
 import org.sonar.plugins.python.api.PythonVisitorContext;
 import org.sonar.plugins.python.api.symbols.Symbol;
@@ -41,6 +43,8 @@ public class PythonDetectionEngine implements IDetectionEngine<Tree, Symbol> {
     private final DetectionStore<PythonCheck, Tree, Symbol, PythonVisitorContext> detectionStore;
 
     @Nonnull private final Handler<PythonCheck, Tree, Symbol, PythonVisitorContext> handler;
+
+    private static final Logger LOG = Loggers.get(PythonDetectionEngine.class);
 
     public PythonDetectionEngine(
             @Nonnull DetectionStore<PythonCheck, Tree, Symbol, PythonVisitorContext> detectionStore,
@@ -56,11 +60,30 @@ public class PythonDetectionEngine implements IDetectionEngine<Tree, Symbol> {
 
     @Override
     public void run(@Nonnull TraceSymbol<Symbol> traceSymbol, @Nonnull Tree tree) {
+        String file = detectionStore.getScanContext().getFilePath();
+        int line = tree.firstToken() != null ? tree.firstToken().line() : -1;
+        LOG.info(
+                "PY engine: run nodeKind={} file={} line={}",
+                tree.getClass().getSimpleName(),
+                file,
+                line);
         if (tree instanceof CallExpression callExpressionTree) {
             handler.addCallToCallStack(callExpressionTree, detectionStore.getScanContext());
             if (detectionStore
                     .getDetectionRule()
                     .match(callExpressionTree, handler.getLanguageSupport().translation())) {
+                String callee =
+                        callExpressionTree.calleeSymbol() != null
+                                ? callExpressionTree.calleeSymbol().name()
+                                : "<unknown>";
+                String asset =
+                        detectionStore.getDetectionValueContext().type().getSimpleName();
+                LOG.info(
+                        "PY engine: MATCH rule={} callee={} asset={} alg={}",
+                        detectionStore.getDetectionRule().bundle().getIdentifier(),
+                        callee,
+                        asset,
+                        "<n/a>");
                 this.analyseExpression(traceSymbol, callExpressionTree);
             }
         }
@@ -354,6 +377,11 @@ public class PythonDetectionEngine implements IDetectionEngine<Tree, Symbol> {
         if (detectionStore.getDetectionRule().is(MethodDetectionRule.class)) {
             MethodDetection<Tree> methodDetection = new MethodDetection<>(expressionTree, null);
             detectionStore.onReceivingNewDetection(methodDetection);
+            LOG.info(
+                    "PY engine: EMIT finding id={} asset={} details={}",
+                    detectionStore.getStoreId(),
+                    detectionStore.getDetectionValueContext().type().getSimpleName(),
+                    "method");
             return;
         }
 
@@ -361,6 +389,11 @@ public class PythonDetectionEngine implements IDetectionEngine<Tree, Symbol> {
         if (detectionRule.actionFactory() != null) {
             MethodDetection<Tree> methodDetection = new MethodDetection<>(expressionTree, null);
             detectionStore.onReceivingNewDetection(methodDetection);
+            LOG.info(
+                    "PY engine: EMIT finding id={} asset={} details={}",
+                    detectionStore.getStoreId(),
+                    detectionStore.getDetectionValueContext().type().getSimpleName(),
+                    "action");
         }
 
         // Extracts the arguments for the provided expression
@@ -407,7 +440,18 @@ public class PythonDetectionEngine implements IDetectionEngine<Tree, Symbol> {
                                                     detectableParameter,
                                                     expressionTree,
                                                     expressionTree))
-                            .forEach(detectionStore::onReceivingNewDetection);
+                            .forEach(
+                                    value -> {
+                                        detectionStore.onReceivingNewDetection(value);
+                                        LOG.info(
+                                                "PY engine: EMIT finding id={} asset={} details={}",
+                                                detectionStore.getStoreId(),
+                                                detectionStore
+                                                        .getDetectionValueContext()
+                                                        .type()
+                                                        .getSimpleName(),
+                                                "value");
+                                    });
                 }
             } else if (!parameter.getDetectionRules().isEmpty()) {
                 /*

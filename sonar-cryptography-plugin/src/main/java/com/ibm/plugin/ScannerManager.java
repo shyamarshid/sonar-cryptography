@@ -33,9 +33,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 
 public final class ScannerManager {
     private final IOutputFileFactory outputFileFactory;
+
+    private static final Logger LOG = Loggers.get(ScannerManager.class);
 
     public ScannerManager(@Nullable IOutputFileFactory outputFileFactory) {
         this.outputFileFactory = outputFileFactory;
@@ -65,10 +69,18 @@ public final class ScannerManager {
 
     @Nonnull
     private List<INode> getAggregatedNodes() {
+        List<INode> javaNodes = JavaAggregator.getDetectedNodes();
+        List<INode> pyNodes = PythonAggregator.getDetectedNodes();
+        List<INode> cNodes = CAggregator.getDetectedNodes();
+        LOG.info(
+                "ScannerManager: totals -> PY={} JAVA={} C={}",
+                pyNodes.size(),
+                javaNodes.size(),
+                cNodes.size());
         List<INode> nodes = new ArrayList<>();
-        nodes.addAll(JavaAggregator.getDetectedNodes());
-        nodes.addAll(PythonAggregator.getDetectedNodes());
-        nodes.addAll(CAggregator.getDetectedNodes());
+        nodes.addAll(javaNodes);
+        nodes.addAll(pyNodes);
+        nodes.addAll(cNodes);
         return nodes;
     }
 

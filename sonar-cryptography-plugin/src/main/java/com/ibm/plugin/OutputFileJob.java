@@ -19,17 +19,20 @@
  */
 package com.ibm.plugin;
 
+import com.ibm.plugin.CAggregator;
+import com.ibm.plugin.JavaAggregator;
+import com.ibm.plugin.PythonAggregator;
 import com.ibm.output.cyclondx.CBOMOutputFileFactory;
 import java.io.File;
 import javax.annotation.Nonnull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.postjob.PostJob;
 import org.sonar.api.batch.postjob.PostJobContext;
 import org.sonar.api.batch.postjob.PostJobDescriptor;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 
 public class OutputFileJob implements PostJob {
-    private static final Logger LOGGER = LoggerFactory.getLogger(OutputFileJob.class);
+    private static final Logger LOG = Loggers.get(OutputFileJob.class);
 
     @Override
     public void describe(PostJobDescriptor postJobDescriptor) {
@@ -44,10 +47,15 @@ public class OutputFileJob implements PostJob {
                         .get(Constants.CBOM_OUTPUT_NAME)
                         .orElse(Constants.CBOM_OUTPUT_NAME_DEFAULT);
         ScannerManager scannerManager = new ScannerManager(new CBOMOutputFileFactory());
+        LOG.info(
+                "CBOM write: PY={} JAVA={} C={}",
+                PythonAggregator.getDetectedNodes().size(),
+                JavaAggregator.getDetectedNodes().size(),
+                CAggregator.getDetectedNodes().size());
         final File cbom = new File(cbomFilename + ".json");
         scannerManager.getOutputFile().saveTo(cbom);
-        LOGGER.info("CBOM was successfully generated '{}'.", cbom.getAbsolutePath());
-        scannerManager.getStatistics().print(LOGGER::info);
+        LOG.info("CBOM was successfully generated '{}'.", cbom.getAbsolutePath());
+        scannerManager.getStatistics().print(LOG::info);
         scannerManager.reset();
     }
 }

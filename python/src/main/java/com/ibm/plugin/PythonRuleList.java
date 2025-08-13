@@ -24,27 +24,54 @@ import com.ibm.plugin.rules.PythonNoMD5UseRule;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.python.api.PythonCheck;
 
 public final class PythonRuleList {
 
     private PythonRuleList() {}
 
+    private static final Logger LOG = Loggers.get(PythonRuleList.class);
+
     public static @Nonnull List<Class<?>> getChecks() {
         List<Class<? extends PythonCheck>> checks = new ArrayList<>();
         checks.addAll(getPythonChecks());
         checks.addAll(getPythonTestChecks());
-        return Collections.unmodifiableList(checks);
+        List<Class<?>> result = Collections.unmodifiableList(checks);
+        LOG.info(
+                "PY rule list -> {} checks: {}",
+                result.size(),
+                result.stream()
+                        .map(Class::getSimpleName)
+                        .collect(Collectors.joining(", ")));
+        return result;
     }
 
     /** These rules are going to target MAIN code only */
     public static @Nonnull List<Class<? extends PythonCheck>> getPythonChecks() {
-        return List.of(PythonInventoryRule.class, PythonNoMD5UseRule.class);
+        List<Class<? extends PythonCheck>> list =
+                List.of(PythonInventoryRule.class, PythonNoMD5UseRule.class);
+        LOG.info(
+                "PY rule list -> {} checks: {}",
+                list.size(),
+                list.stream()
+                        .map(Class::getSimpleName)
+                        .collect(Collectors.joining(", ")));
+        return list;
     }
 
     /** These rules are going to target TEST code only */
     public static List<Class<? extends PythonCheck>> getPythonTestChecks() {
-        return List.of();
+        List<Class<? extends PythonCheck>> list = List.of();
+        LOG.info(
+                "PY rule list -> {} checks: {}",
+                list.size(),
+                list.stream()
+                        .map(Class::getSimpleName)
+                        .collect(Collectors.joining(", ")));
+        return list;
     }
 }

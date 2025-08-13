@@ -28,6 +28,8 @@ import com.ibm.rules.InventoryRule;
 import com.ibm.rules.issue.Issue;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.check.Rule;
 import org.sonar.java.annotations.VisibleForTesting;
 import org.sonar.plugins.python.api.tree.Tree;
@@ -35,8 +37,14 @@ import org.sonar.plugins.python.api.tree.Tree;
 @Rule(key = "Inventory")
 public class PythonInventoryRule extends PythonBaseDetectionRule {
 
+    private static final Logger LOG = Loggers.get(PythonInventoryRule.class);
+
     public PythonInventoryRule() {
         super(true, PythonDetectionRules.rules(), PythonReorganizerRules.rules());
+        LOG.info(
+                "PY visitor '{}' initialized; subscribing to node kinds: {}",
+                "Inventory",
+                "CALL_EXPRESSION");
     }
 
     @VisibleForTesting

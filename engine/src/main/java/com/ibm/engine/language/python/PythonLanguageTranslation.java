@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.python.api.symbols.Symbol;
 import org.sonar.plugins.python.api.tree.Argument;
 import org.sonar.plugins.python.api.tree.CallExpression;
@@ -36,22 +38,26 @@ import org.sonar.plugins.python.api.tree.Tree;
 
 public class PythonLanguageTranslation implements ILanguageTranslation<Tree> {
 
+    private static final Logger LOG = Loggers.get(PythonLanguageTranslation.class);
+
     @Nonnull
     @Override
     public Optional<String> getMethodName(
             @Nonnull MatchContext matchContext, @Nonnull Tree methodInvocation) {
+        Optional<String> result = Optional.empty();
         if (methodInvocation instanceof CallExpression callExpression) {
             // We use "name" and not "fullyQualifiedName" to make it like in the Java implementation
             Symbol methodInvocationSymbol = callExpression.calleeSymbol();
             if (methodInvocationSymbol != null) {
-                return Optional.of(methodInvocationSymbol.name());
+                result = Optional.of(methodInvocationSymbol.name());
             } else if (callExpression.callee()
                     instanceof Name nameTree) { // Rare case when the symbol is not defined,
                 // sometimes for imported classes
-                return Optional.of(nameTree.name());
+                result = Optional.of(nameTree.name());
             }
         }
-        return Optional.empty();
+        LOG.info("PY translation: method name = {}", result.orElse("<empty>"));
+        return result;
     }
 
     @Nonnull
