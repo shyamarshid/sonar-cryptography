@@ -11,9 +11,9 @@ import com.ibm.plugin.translation.CxxTranslationProcess;
 import com.ibm.rules.IReportableDetectionRule;
 import com.ibm.rules.InventoryRule;
 import com.ibm.rules.issue.Issue;
-import com.sonar.sslr.api.AstNode;
-import com.sonar.sslr.api.Grammar;
-import com.sonar.sslr.impl.matcher.GenericTokenType;
+import com.sonar.cxx.sslr.api.AstNode;
+import com.sonar.cxx.sslr.api.GenericTokenType;
+import com.sonar.cxx.sslr.api.Grammar;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.sonar.api.utils.log.Logger;
@@ -21,7 +21,7 @@ import org.sonar.api.utils.log.Loggers;
 import org.sonar.check.Rule;
 import org.sonar.cxx.parser.CxxGrammarImpl;
 import org.sonar.cxx.parser.CxxPunctuator;
-import org.sonar.squidbridge.checks.SquidCheck;
+import org.sonar.cxx.squidbridge.checks.SquidCheck;
 
 @Rule(key = "Inventory", name = "Cryptographic Inventory (CBOM)")
 public class CInventoryRule extends SquidCheck<Grammar>
@@ -37,7 +37,7 @@ public class CInventoryRule extends SquidCheck<Grammar>
   @Override
   public void init() {
     LOG.info("CXX probe: CInventoryRule#inside_init");
-    // Subscribe to postfixExpression and filter actual calls by '('
+    // Subscribe to function-call candidates; filter by '(' below
     subscribeTo(CxxGrammarImpl.postfixExpression);
     LOG.info(
         "CXX {}: event=<visitor-init> ruleKey={} nodeKinds=[postfixExpression]",
@@ -47,8 +47,8 @@ public class CInventoryRule extends SquidCheck<Grammar>
 
   @Override
   public void visitNode(AstNode node) {
-    // It's a function call only if it contains '('
-    if (node.getFirstChild(CxxPunctuator.LPAREN) == null) {
+    // Treat as call only if '(' is present in this postfix expression
+    if (node.getFirstChild(CxxPunctuator.BR_LEFT) == null) {
       return;
     }
 
@@ -84,8 +84,6 @@ public class CInventoryRule extends SquidCheck<Grammar>
           exec.subscribe(this);
           exec.start();
         });
-
-    super.visitNode(node);
   }
 
   @Override
