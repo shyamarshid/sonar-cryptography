@@ -22,8 +22,12 @@ package com.ibm.plugin;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.sonar.api.SonarRuntime;
 import org.sonar.api.server.rule.RulesDefinition;
+import org.sonar.api.server.rule.RulesDefinition.NewRule;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonarsource.analyzer.commons.RuleMetadataLoader;
 
 public class PythonScannerRuleDefinition implements RulesDefinition {
@@ -36,6 +40,8 @@ public class PythonScannerRuleDefinition implements RulesDefinition {
     private static final String RESOURCE_BASE_PATH = "/org/sonar/l10n/python/rules/python";
 
     private final SonarRuntime sonarRuntime;
+
+    private static final Logger LOG = Loggers.get(PythonScannerRuleDefinition.class);
 
     public PythonScannerRuleDefinition(SonarRuntime sonarRuntime) {
         this.sonarRuntime = sonarRuntime;
@@ -52,6 +58,13 @@ public class PythonScannerRuleDefinition implements RulesDefinition {
         setTemplates(repository);
 
         repository.done();
+
+        LOG.info(
+                "Registered PY repository '{}' with rules {}",
+                REPOSITORY_KEY,
+                repository.rules().stream()
+                        .map(NewRule::key)
+                        .collect(Collectors.toList()));
     }
 
     private static void setTemplates(NewRepository repository) {

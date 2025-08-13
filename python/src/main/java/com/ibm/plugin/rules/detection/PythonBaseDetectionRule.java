@@ -34,6 +34,8 @@ import com.ibm.rules.issue.Issue;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.python.api.PythonCheck;
 import org.sonar.plugins.python.api.PythonVisitorCheck;
 import org.sonar.plugins.python.api.PythonVisitorContext;
@@ -48,6 +50,8 @@ public abstract class PythonBaseDetectionRule extends PythonVisitorCheck
     private final boolean isInventory;
     @Nonnull protected final PythonTranslationProcess pythonTranslationProcess;
     @Nonnull protected final List<IDetectionRule<Tree>> detectionRules;
+
+    private static final Logger LOG = Loggers.get(PythonBaseDetectionRule.class);
 
     protected PythonBaseDetectionRule() {
         this.isInventory = false;
@@ -67,6 +71,12 @@ public abstract class PythonBaseDetectionRule extends PythonVisitorCheck
 
     @Override
     public void visitCallExpression(@Nonnull CallExpression tree) {
+        String file = this.getContext().pythonFile().uri().getPath();
+        int line = tree.firstToken() != null ? tree.firstToken().line() : -1;
+        String callee =
+                tree.calleeSymbol() != null ? tree.calleeSymbol().name() : "<unknown>";
+        LOG.info("PY visit file={} line={} callee={}", file, line, callee);
+        LOG.info("PY running {} detection rules on callee={}", detectionRules.size(), callee);
         detectionRules.forEach(
                 rule -> {
                     DetectionExecutive<PythonCheck, Tree, Symbol, PythonVisitorContext>
@@ -89,6 +99,9 @@ public abstract class PythonBaseDetectionRule extends PythonVisitorCheck
      */
     @Override
     public void update(@Nonnull Finding<PythonCheck, Tree, Symbol, PythonVisitorContext> finding) {
+        String asset =
+                finding.detectionStore().getDetectionValueContext().type().getSimpleName();
+        LOG.info("PY finding: asset={} alg={} extra={}", asset, "<n/a>", finding.detectionStore().getStoreId());
         List<INode> nodes = pythonTranslationProcess.initiate(finding.detectionStore());
         if (isInventory) {
             PythonAggregator.addNodes(nodes);

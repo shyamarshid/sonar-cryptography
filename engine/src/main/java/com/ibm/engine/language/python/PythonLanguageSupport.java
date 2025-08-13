@@ -37,6 +37,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import org.sonar.api.utils.log.Logger;
+import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.python.api.PythonCheck;
 import org.sonar.plugins.python.api.PythonVisitorContext;
 import org.sonar.plugins.python.api.symbols.Symbol;
@@ -49,6 +51,8 @@ import org.sonar.plugins.python.api.tree.Tree;
 public class PythonLanguageSupport
         implements ILanguageSupport<PythonCheck, Tree, Symbol, PythonVisitorContext> {
     @Nonnull private final Handler<PythonCheck, Tree, Symbol, PythonVisitorContext> handler;
+
+    private static final Logger LOG = Loggers.get(PythonLanguageSupport.class);
 
     public PythonLanguageSupport() {
         this.handler = new Handler<>(this);
@@ -99,6 +103,7 @@ public class PythonLanguageSupport
 
     @Override
     public MethodMatcher<Tree> createMethodMatcherBasedOn(@Nonnull Tree methodDefinition) {
+        String nodeKind = methodDefinition.getClass().getSimpleName();
         if (methodDefinition instanceof FunctionDef functionDefTree) {
             // The `invocationObjectName` consists of the filename + the class(es). We use
             // `fullyQualifiedName`, here that basically is `invocationObjectName` + the function
@@ -127,9 +132,17 @@ public class PythonLanguageSupport
                                 .toArray(String[]::new);
                 parameterTypeList = new LinkedList<>(Arrays.asList(parameters));
             }
-
+            String callee =
+                    invocationObjectName.isEmpty()
+                            ? name
+                            : invocationObjectName + "." + name;
+            LOG.info(
+                    "PY support: matcher for nodeKind={} callee={}",
+                    nodeKind,
+                    callee.isEmpty() ? "<empty>" : callee);
             return new MethodMatcher<>(invocationObjectName, name, parameterTypeList);
         }
+        LOG.info("PY support: matcher for nodeKind={} callee={}", nodeKind, "<empty>");
         return null;
     }
 
