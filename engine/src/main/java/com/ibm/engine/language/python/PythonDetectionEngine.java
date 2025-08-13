@@ -63,15 +63,26 @@ public class PythonDetectionEngine implements IDetectionEngine<Tree, Symbol> {
 
     @Override
     public void run(@Nonnull TraceSymbol<Symbol> traceSymbol, @Nonnull Tree tree) {
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "run",
-                            "file="
-                                    + detectionStore.getScanContext().getFilePath()
-                                    + " kind="
-                                    + tree.getKind()));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "run",
+                                "file="
+                                        + detectionStore.getScanContext().getFilePath()
+                                        + " kind="
+                                        + tree.getKind()));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "run",
+                                "file="
+                                        + detectionStore.getScanContext().getFilePath()
+                                        + " kind="
+                                        + tree.getKind()));
+            }
         }
         if (tree instanceof CallExpression callExpressionTree) {
             handler.addCallToCallStack(callExpressionTree, detectionStore.getScanContext());
@@ -88,7 +99,7 @@ public class PythonDetectionEngine implements IDetectionEngine<Tree, Symbol> {
                             .match(callExpressionTree, handler.getLanguageSupport().translation());
             if (matched) {
                 this.analyseExpression(traceSymbol, callExpressionTree);
-                if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+                if (CryptoTrace.isEnabled()) {
                     String asset =
                             detectionStore
                                     .getDetectionValueContext()
@@ -99,29 +110,55 @@ public class PythonDetectionEngine implements IDetectionEngine<Tree, Symbol> {
                                     .findFirst()
                                     .map(v -> v.asString())
                                     .orElse("");
-                    LOG.trace(
-                            CryptoTrace.fmt(
-                                    this,
-                                    "run",
-                                    "MATCH rule="
-                                            + detectionStore
-                                                    .getDetectionRule()
-                                                    .bundle()
-                                                    .getIdentifier()
-                                            + " callee="
-                                            + callee
-                                            + " asset="
-                                            + asset
-                                            + " alg="
-                                            + alg));
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace(
+                                CryptoTrace.fmt(
+                                        this,
+                                        "run",
+                                        "MATCH rule="
+                                                + detectionStore
+                                                        .getDetectionRule()
+                                                        .bundle()
+                                                        .getIdentifier()
+                                                + " callee="
+                                                + callee
+                                                + " asset="
+                                                + asset
+                                                + " alg="
+                                                + alg));
+                    } else if (LOG.isDebugEnabled()) {
+                        LOG.debug(
+                                CryptoTrace.fmt(
+                                        this,
+                                        "run",
+                                        "MATCH rule="
+                                                + detectionStore
+                                                        .getDetectionRule()
+                                                        .bundle()
+                                                        .getIdentifier()
+                                                + " callee="
+                                                + callee
+                                                + " asset="
+                                                + asset
+                                                + " alg="
+                                                + alg));
+                    }
                 }
             } else {
-                if (LOG.isTraceEnabled()
-                        && CryptoTrace.isEnabled()
-                        && noMatchLogged.add(callee)) {
-                    LOG.trace(
-                            CryptoTrace.fmt(
-                                    this, "run", "NO-MATCH callee=" + callee));
+                if (CryptoTrace.isEnabled()) {
+                    if (LOG.isTraceEnabled()) {
+                        if (noMatchLogged.add(callee)) {
+                            LOG.trace(
+                                    CryptoTrace.fmt(
+                                            this, "run", "NO-MATCH callee=" + callee));
+                        }
+                    } else if (LOG.isDebugEnabled()) {
+                        if (noMatchLogged.add(callee)) {
+                            LOG.debug(
+                                    CryptoTrace.fmt(
+                                            this, "run", "NO-MATCH callee=" + callee));
+                        }
+                    }
                 }
             }
         }

@@ -47,12 +47,20 @@ public class PythonScannerRuleDefinition implements RulesDefinition {
 
     @Override
     public void define(Context context) {
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "define",
-                            "start repo=" + REPOSITORY_KEY + " lang=py"));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "define",
+                                "start repo=" + REPOSITORY_KEY + " lang=py"));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "define",
+                                "start repo=" + REPOSITORY_KEY + " lang=py"));
+            }
         }
         NewRepository repository =
                 context.createRepository(REPOSITORY_KEY, "py").setName(REPOSITORY_NAME);
@@ -63,15 +71,26 @@ public class PythonScannerRuleDefinition implements RulesDefinition {
         setTemplates(repository);
 
         repository.done();
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "define",
-                            "end repo="
-                                    + REPOSITORY_KEY
-                                    + " lang=py rules="
-                                    + PythonRuleList.getChecks().size()));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "define",
+                                "end repo="
+                                        + REPOSITORY_KEY
+                                        + " lang=py rules="
+                                        + PythonRuleList.getChecks().size()));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "define",
+                                "end repo="
+                                        + REPOSITORY_KEY
+                                        + " lang=py rules="
+                                        + PythonRuleList.getChecks().size()));
+            }
         }
     }
 

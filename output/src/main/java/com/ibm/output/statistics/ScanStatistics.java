@@ -43,12 +43,20 @@ public final class ScanStatistics implements IStatistics {
 
     @Override
     public void print(@Nonnull Consumer<String> out) {
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "print",
-                            "assets=" + numberOfDetectedAssets));
+        if (CryptoTrace.isEnabled()) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "print",
+                                "assets=" + numberOfDetectedAssets));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "print",
+                                "assets=" + numberOfDetectedAssets));
+            }
         }
         out.accept("========== CBOM Statistics ==========");
         out.accept(String.format("%-33s: %s", "Detected Assets", numberOfDetectedAssets));

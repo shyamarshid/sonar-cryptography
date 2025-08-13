@@ -132,12 +132,20 @@ public class PythonLanguageSupport
                 parameterTypeList = new LinkedList<>(Arrays.asList(parameters));
             }
 
-            if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-                LOG.trace(
-                        CryptoTrace.fmt(
-                                this,
-                                "createMethodMatcherBasedOn",
-                                "callee=" + name + " kind=" + methodDefinition.getKind()));
+            if (CryptoTrace.isEnabled()) {
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace(
+                            CryptoTrace.fmt(
+                                    this,
+                                    "createMethodMatcherBasedOn",
+                                    "callee=" + name + " kind=" + methodDefinition.getKind()));
+                } else if (LOG.isDebugEnabled()) {
+                    LOG.debug(
+                            CryptoTrace.fmt(
+                                    this,
+                                    "createMethodMatcherBasedOn",
+                                    "callee=" + name + " kind=" + methodDefinition.getKind()));
+                }
             }
 
             return new MethodMatcher<>(invocationObjectName, name, parameterTypeList);

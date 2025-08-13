@@ -340,8 +340,16 @@ public class CBOMOutputFile implements IOutputFile {
         try {
             final String bomString = bomGenerator.toJsonString();
             FileUtils.write(file, bomString, StandardCharsets.UTF_8, false);
-            if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
-                LOG.trace(CryptoTrace.fmt(this, "saveTo", "path=" + file.getAbsolutePath()));
+            if (CryptoTrace.isEnabled()) {
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace(
+                            CryptoTrace.fmt(
+                                    this, "saveTo", "path=" + file.getAbsolutePath()));
+                } else if (LOG.isDebugEnabled()) {
+                    LOG.debug(
+                            CryptoTrace.fmt(
+                                    this, "saveTo", "path=" + file.getAbsolutePath()));
+                }
             }
         } catch (IOException e) {
             LOG.error("Could not write CBOM file: {}", e.getMessage());

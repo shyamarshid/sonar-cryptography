@@ -40,14 +40,22 @@ public class PythonCheckRegistrar implements PythonCustomRuleRepository {
     @Override
     public List<Class<?>> checkClasses() {
         List<Class<?>> checks = new ArrayList<>(PythonRuleList.getPythonChecks());
-        if (LOG.isTraceEnabled() && CryptoTrace.isEnabled()) {
+        if (CryptoTrace.isEnabled()) {
             String names =
                     checks.stream().map(Class::getSimpleName).collect(Collectors.joining(","));
-            LOG.trace(
-                    CryptoTrace.fmt(
-                            this,
-                            "checkClasses",
-                            "repo=" + repositoryKey() + " checks=" + names));
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                        CryptoTrace.fmt(
+                                this,
+                                "checkClasses",
+                                "repo=" + repositoryKey() + " checks=" + names));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        CryptoTrace.fmt(
+                                this,
+                                "checkClasses",
+                                "repo=" + repositoryKey() + " checks=" + names));
+            }
         }
         return checks;
     }
