@@ -40,19 +40,19 @@ public class CxxDetectionEngine implements IDetectionEngine<Object, Object> {
 
     @Override
     public void run(@Nonnull TraceSymbol<Object> traceSymbol, @Nonnull Object tree) {
-        String filePath = detectionStore.getScanContext().getFilePath();
-        String line = "<n/a>";
-        String nodeKind = "<n/a>";
-        if (tree instanceof AstNode node) {
-            line = node.getToken() != null ? String.valueOf(node.getToken().getLine()) : "<n/a>";
-            nodeKind = node.getType().toString();
-        }
+        AstNode node = tree instanceof AstNode ? (AstNode) tree : null;
+        final String filePath = detectionStore.getScanContext().getFilePath();
+        final String line =
+                node != null && node.getToken() != null
+                        ? String.valueOf(node.getToken().getLine())
+                        : "<n/a>";
+        final String nodeKind = node != null ? node.getType().toString() : "<n/a>";
         LOG.info(
                 "CXX {}: event=<engine-run> src={} nodeKind={}",
                 ORIGIN,
                 filePath + ":" + line,
                 nodeKind);
-        if (tree instanceof AstNode node) {
+        if (node != null) {
             if (node.getFirstChild(CxxPunctuator.BR_LEFT) != null) {
                 handler.addCallToCallStack(node, detectionStore.getScanContext());
                 if (detectionStore
