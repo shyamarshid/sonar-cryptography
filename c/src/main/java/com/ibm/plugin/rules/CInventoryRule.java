@@ -24,6 +24,7 @@ import org.sonar.cxx.parser.CxxPunctuator;
 import org.sonar.cxx.squidbridge.checks.SquidCheck;
 
 @Rule(key = "Inventory", name = "Cryptographic Inventory (CBOM)")
+@ActivatedByDefault
 public class CInventoryRule extends SquidCheck<Grammar>
     implements IReportableDetectionRule<Object>,
         com.ibm.common.IObserver<Finding<Object, Object, Object, Object>> {
