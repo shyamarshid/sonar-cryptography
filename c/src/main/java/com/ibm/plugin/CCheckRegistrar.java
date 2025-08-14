@@ -11,7 +11,7 @@ public final class CCheckRegistrar extends CustomCxxRulesDefinition {
   private static final Logger LOG = Loggers.get(CCheckRegistrar.class);
   private static final String ORIGIN = CCheckRegistrar.class.getSimpleName() + ".java";
 
-  @Override
+  /*@Override
   public String repositoryName() {
     return CScannerRuleDefinition.REPOSITORY_NAME;
   }
@@ -20,7 +20,7 @@ public final class CCheckRegistrar extends CustomCxxRulesDefinition {
   public String repositoryKey() {
     return CScannerRuleDefinition.REPOSITORY_KEY;
   }
-
+*/
   @Override
   @SuppressWarnings({ "rawtypes", "unchecked" })
   public Class[] checkClasses() {
@@ -28,7 +28,7 @@ public final class CCheckRegistrar extends CustomCxxRulesDefinition {
     LOG.info(
         "CXX {}: event=<register-checks> repoKey={} checks=[{}]",
         ORIGIN,
-        CScannerRuleDefinition.REPOSITORY_KEY,
+        //CScannerRuleDefinition.REPOSITORY_KEY,
         checks.stream().map(Class::getSimpleName).collect(Collectors.joining(",")));
     return checks.toArray(new Class[0]);
   }
