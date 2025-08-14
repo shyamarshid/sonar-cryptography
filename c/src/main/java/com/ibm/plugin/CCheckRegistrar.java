@@ -20,8 +20,9 @@ public final class CCheckRegistrar extends CustomCxxRulesDefinition {
   public String repositoryKey() {
     return CScannerRuleDefinition.REPOSITORY_KEY;
   }
-*/
+
   @Override
+  */
   @SuppressWarnings({ "rawtypes", "unchecked" })
   public Class[] checkClasses() {
     List<Class<?>> checks = CRuleList.getChecks();
