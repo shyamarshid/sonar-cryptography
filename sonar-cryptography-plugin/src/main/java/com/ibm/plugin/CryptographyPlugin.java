@@ -52,7 +52,7 @@ public class CryptographyPlugin implements Plugin {
                 PythonScannerRuleDefinition.class, // Define Rules
                 PythonCheckRegistrar.class, // Register Python rules by sonar-python sensor
                 // c/c++
-                CScannerRuleDefinition.class, // Define Rules
+                //CScannerRuleDefinition.class, // Define Rules
                 CCheckRegistrar.class, // Register C/C++ rules by sonar-cxx sensor
                 // general
                 OutputFileJob.class);
