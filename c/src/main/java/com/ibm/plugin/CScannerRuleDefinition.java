@@ -53,7 +53,7 @@ public final class CScannerRuleDefinition implements RulesDefinition {
   @Override
   public void define(Context context) {
     NewRepository repository =
-        context.createRepository(REPOSITORY_KEY, CxxLanguage.KEY).setName(REPOSITORY_NAME);
+        context.createRepository(REPOSITORY_KEY, "cxx").setName(REPOSITORY_NAME);
 
     // Load rule metadata from resources and annotated check classes
     // (annotation @Rule on CInventoryRule provides key/name; HTML provides description)
