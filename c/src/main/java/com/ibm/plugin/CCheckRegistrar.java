@@ -5,9 +5,7 @@ import java.util.stream.Collectors;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.cxx.CustomCxxRulesDefinition;
-import org.sonarsource.api.sonarlint.SonarLintSide;
 
-@SonarLintSide
 public final class CCheckRegistrar extends CustomCxxRulesDefinition {
 
   private static final Logger LOG = Loggers.get(CCheckRegistrar.class);
